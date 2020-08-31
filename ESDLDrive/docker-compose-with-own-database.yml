@@ -1,0 +1,57 @@
+version: '3.8'
+
+networks:
+  mapeditor-net:
+    external:
+      name: mapeditor-net
+
+services:
+  cdo-server:
+    image: "cdo-server:latest"
+    container_name: cdo-server
+    ports:
+      - "2036:2036"
+    depends_on: 
+      - postgis
+    links:
+      - postgis
+    environment:
+      - POSTGRESQL_HOST=postgis
+      - POSTGRESQL_PORT=5432
+      - POSTGRESQL_STARTUP_DELAY=11
+    networks:
+      - mapeditor-net
+
+  postgis:
+    image: "kartoza/postgis:12.0"
+    container_name: cdo-postgis
+    volumes:
+      - cdo-postgis-data:/var/lib/postgresql
+    environment:    
+      - POSTGRES_USER=postgis
+      - POSTGRES_PASS=postgis123
+      - POSTGRES_DBNAME=esdlrepo
+    ports: 
+      - "15432:5432"
+    networks:
+      - mapeditor-net
+
+  esdl-drive: 
+    image: "esdl-drive:latest"
+    container_name: esdl-drive
+    ports:
+      - 9080:9080
+      - 9443:9443
+    depends_on:
+      - cdo-server
+    links:
+      - cdo-server
+    environment:
+      - CDO_SERVER_HOST=cdo-server:2036
+      - KEYCLOAK_REALM=http://keycloak:8080/auth/realms/esdl-mapeditor
+      - KEYCLOAK_REALM_EXTERNAL=http://localhost:8080/auth/realms/esdl-mapeditor
+    networks:
+      - mapeditor-net
+
+volumes:
+  cdo-postgis-data:

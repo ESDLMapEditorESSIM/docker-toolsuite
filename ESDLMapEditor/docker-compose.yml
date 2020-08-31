@@ -1,0 +1,43 @@
+version: '3.5'
+
+networks:                
+  mapeditor-net:         
+    external:            
+      name: mapeditor-net
+
+services:
+  mapeditor:
+    container_name: esdl-mapeditor
+    image: esdlmapeditoressim/esdl-mapeditor:latest
+    # image: esdl-mapeditor:latest
+    networks:
+      - mapeditor-net
+    ports:
+      - "${MAPEDITOR_PORT:-8111}:8111"
+    env_file:
+      - mapeditor_open_source.env
+
+  boundary-service:
+    container_name: boundary-service
+    image: esdlmapeditoressim/boundary-service:latest
+    # image: boundary-service:latest
+    networks:
+      - mapeditor-net
+    ports:
+      - "${BOUNDARYSERVICE_PORT:-4002}:4002"
+
+  panel-service:
+    container_name: panel-service
+    image: esdlmapeditoressim/panel-service:latest
+    # image: panel-service:latest
+    ports:
+      - 3400:5000
+    networks:
+      - mapeditor-net
+    environment:
+      - ENV=dev
+      - INTERNAL_GRAFANA_HOST=grafana
+      - INTERNAL_GRAFANA_PORT=3000
+      - EXTERNAL_GRAFANA_URL=http://localhost:3000
+    env_file:
+     - panel_service.env
