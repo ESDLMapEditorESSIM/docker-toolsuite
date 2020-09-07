@@ -135,13 +135,13 @@ Once you're logged in, you should see the following screen
 Click `Users` from the menu on the left
 ![](Documentation/Images/keycloak-users.png)
 
-Click `Add User` and fill in the proper user credentials
+Click `Add User` and fill in the proper user credentials and click `Save`
 ![](Documentation/Images/keycloak-add-user.png)
 
-Set the password of the newly created user
+After clicking `Save` a number of tabs appear. Go to the `Credentials` tab and set the password of the newly created user
 ![](Documentation/Images/keycloak-set-password.png)
 
-Add an attribute `role` with value `essim`, press `Add` and press `Save`
+Go to the `Attributes` tab and add an attribute `role` with value `essim`, press `Add` and press `Save`
 ![](Documentation/Images/keycloak-set-attributes.png)
 
 ### Step 4. Configure role based access control for ESSIM dashboard
