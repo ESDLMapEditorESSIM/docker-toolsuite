@@ -16,6 +16,7 @@ This project contains all information necesarry to run the ESDL MapEditor and ES
   - [Step 5. Create an API key in Grafana for the Panel Service](#step-5-create-an-api-key-in-grafana-for-the-panel-service)
   - [Step 6. Start the MapEditor and ESSIM](#step-6-start-the-mapeditor-and-essim)
   - [Step 7. Log in to the ESDL MapEditor](#step-7-log-in-to-the-esdl-mapeditor)
+  - [Step 8. Upload some profiles](#step-8-upload-some-profiles)
 - [ESDL MapEditor and ESSIM Tutorials](#esdl-mapeditor-and-essim-tutorials)
 - [Details](#details)
   - [Running services](#running-services)
@@ -93,6 +94,7 @@ Steps to folow
 - [Step 5. Create an API key in Grafana for the Panel Service](#step-5-create-an-api-key-in-grafana-for-the-panel-service)
 - [Step 6. Start the MapEditor and ESSIM](#step-6-start-the-mapeditor-and-essim)
 - [Step 7. Log in to the ESDL MapEditor](#step-7-log-in-to-the-esdl-mapeditor)
+- [Step 8. Upload some profiles](#step-8-upload-some-profiles)
 
 ### Step 1. Starting the software for the base infrastructure
 
