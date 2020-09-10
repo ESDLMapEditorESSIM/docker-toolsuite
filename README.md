@@ -137,7 +137,7 @@ Once you're logged in, you should see the following screen
 Click `Users` from the menu on the left
 ![](Documentation/Images/keycloak-users.png)
 
-Click `Add User` and fill in the proper user credentials and click `Save`
+Click `Add User` and fill in the proper user credentials and click `Save`. Be sure to fill in an email address!
 ![](Documentation/Images/keycloak-add-user.png)
 
 After clicking `Save` a number of tabs appear. Go to the `Credentials` tab and set the password of the newly created user
