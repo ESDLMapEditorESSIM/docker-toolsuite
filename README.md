@@ -104,7 +104,7 @@ docker-compose up
 
 ### Step 2. Import the keycloak settings for the MapEditor
 
-Execute the following three commands from the `BaseInfrastructure` directory or follow detailed instructions [here](https://ci.tno.nl/gitlab/osmapeditoressim/mapeditoressim/-/tree/master/BaseInfrastructure/keycloak)
+Execute the following three commands from the `BaseInfrastructure` directory or follow detailed instructions [here](./BaseInfrastructure/keycloak/README.md)
 
 Copy the configuration in the keycloak container.
 ```
@@ -148,12 +148,6 @@ Go to the `Attributes` tab and add an attribute `role` with value `essim`, press
 
 The ESSIM dashboard is a Grafana based solution for viewing simulation results. Grafana supports multiple roles: Viewer, Editor and Admin. If you want to give some users other roles then Viewer, add the roles Editor and/or Admin to keycloak and assign these roles to the appropriate user. When you don't do this, all users get the Viewer rights.
 
-Go to the `Mappers` tab of the essim-dashboard client and create a new mapper
-![](Documentation/Images/keycloak-essim-dashboard-mappers.png)
-
-Fill in the right fields
-![](Documentation/Images/keycloak-essim-dashboard-create-mapper.png)
-
 Go to the user that needs to become an Editor or Admin, go to the `Role Mappings` tab, at `Client Roles` select `essim-dashboard` and add the Editor or Admin role to the user.
 ![](Documentation/Images/keycloak-essim-dashboard-assign-role-to-user.png)
 
@@ -174,7 +168,7 @@ Fill in the details for the API key. Choose a name (e.g. 'panel-service') and ma
 Copy the generated API key.
 ![](Documentation/Images/grafana-api-key-copy.png)
 
-Fill in this API key in the file `.\ESDLMapEditor\panel-service.env`.
+Fill in this API key in the file `.\ESDLMapEditor\panel-service.env` (Replace the key that is already there).
 ```
 GRAFANA_API_KEY=eyJrIjoiV3g0Z3pGUUxBNkhucXlySjhCRFczNXZwVXhiREhrRXciLCJuIjoicGFuZWwtc2VydmljZSIsImlkIjoxfQ==
 ```
@@ -209,6 +203,21 @@ Press `Start` and log in using the credentials created in the previous step
 
 You should see the following screen now:
 ![](Documentation/Images/mapeditor-main-page.png)
+
+### Step 8. Upload some profiles
+
+If you're installing this toolsuite to run ESSIM simulations or any other application that requires timeseries data, you need to upload some profiles. For that purpose we've created a profile manager. In the repository there is an example dataset with profiles created from publically available data (NEDU profiles for electricity and gas usage and KNMI solar profile). 
+
+Click `View` and select `Settings` from the menu. The application settings dialog appears. Click `Upload profiles`.
+![](Documentation/Images/settings-upload-profiles.png)
+
+Drag the file `.\Data\Profiles\standard_profiles_point.csv` and drop it in the area indicated in the dialog. Depending on your local machine's regional settings (Use '.' or ',' as the decimal seperator) you might need to choose the other csv file in the same directory.
+![](Documentation/Images/settings-upload-profiles-done.png)
+
+After the uploading is finished, click `Profiles plugin` in the menu on the left. On the right side a window appears where you can view and edit the settings of the profiles you've just uploaded.
+![](Documentation/Images/settings-profiles-plugin.png)
+
+The profiles can now be used in the simulations.
 
 ## ESDL MapEditor and ESSIM Tutorials
 Please go [here](https://github.com/ESDLMapEditorESSIM/essim-tutorials) to find five different tutorials that explain how to work with the ESDL MapEditor and ESSIM
