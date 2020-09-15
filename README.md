@@ -18,6 +18,7 @@ This project contains all information necesarry to run the ESDL MapEditor and ES
   - [Step 7. Log in to the ESDL MapEditor](#step-7-log-in-to-the-esdl-mapeditor)
   - [Step 8. Upload some profiles](#step-8-upload-some-profiles)
 - [ESDL MapEditor and ESSIM Tutorials](#esdl-mapeditor-and-essim-tutorials)
+- [Cloud deployment](#cloud-deployment)
 - [Details](#details)
   - [Running services](#running-services)
   - [Default credentials](#default-credentials)
@@ -85,6 +86,8 @@ It consists of the following functionalities:
 - MongoDB: open-source document-oriented database program (NoSQL)
 
 ## Setting up and running the software stack
+
+Although the software was designed to run in a hosted environment somewhere in the cloud or in your in-company datacenter, the software can be run on a local laptop or PC as well. The following steps describe the installation process on a local machine. In [this](#cloud-deployment) chapter we'll give some directions for cloud deployment
 
 Steps to folow
 - [Step 1. Starting the software for the base infrastructure](#step-1-starting-the-software-for-the-base-infrastructure)
@@ -223,6 +226,42 @@ The profiles can now be used in the simulations.
 
 ## ESDL MapEditor and ESSIM Tutorials
 Please go [here](https://github.com/ESDLMapEditorESSIM/essim-tutorials) to find five different tutorials that explain how to work with the ESDL MapEditor and ESSIM
+
+## Cloud deployment
+In order to run this software stack in a hosted environment, several services must be offered to the end-user:
+- The MapEditor frontend: the main entry point for this software stack for end uses
+- The ESSIM dashboard: to show ESSIM simulation results
+- Keycloak (Identity & Access Management): to facilitate the login process
+- The panel service: to visualize the profile data from within the MapEditor
+
+Optionally the following services can be offered too:
+- ESDL drive: although the functionality provided from within the MapEditor is more extensive
+
+In our own hosted environment we use [traefik](https://containo.us/traefik/) as a reverse proxy in front on the above listed services, for two reasons:
+- to terminate SSL traffic
+- as a reverse proxy: to route HTTP traffic to the right container
+
+Furthermore we use:
+- [docker swarm](https://docs.docker.com/engine/swarm/): to create a cluster of several virtual machines
+- [portainer](https://www.portainer.io/): for container management
+- [docker registry](https://docs.docker.com/registry/deploying/): to locally push container images and make deployment in the swarm easier
+
+The four (or five) services listed in the beginning of this chapter must be accessible via seperate domain names (using a local or global DNS server) or seperate IP addresses. As the essim dashboard and the panel service both use grafana as their frontend, they could be treated as the same service if that's desirable. We tried running the services using sub-paths (e.g. https://mycompany.com/mapeditor and https://mycompany.com/essim-dashboard) but we were not very successful to get everything up and running.
+
+The following picture shows how a deployment with a reverse proxy
+![](Documentation/Images/deployment-with-reverse-proxy.png)
+
+Required changes:
+- In `BaseInfrastructure\docker-compose.yml`
+  - Find `GF_SERVER_ROOT_URL`: change `localhost` to the domain name for the ESSIM dashboard
+  - Find `GF_AUTH_SIGNOUT_REDIRECT_URL`: change two (!) occurences of `localhost` to the domain name for keycloak
+  - Find `GF_AUTH_GENERIC_OAUTH_AUTH_URL`: change `localhost` to the domain name for keycloak
+- In `BaseInfrastructure\keycloak\esdl-mapeditor-realm.json` (or login to keycloak and change using their web-based management interface)
+  - Replace all occurences of `localhost:port` to the respective domain names
+- In `ESDLMapeditor\mapeditor_open_source.env`:
+  - Find `PANEL_SERVICE_EXTERNAL_URL`: replace `localhost` with the domain name of the panel service
+- (To be improved) Inside the MapEditor container, find the file `credentials\client_secrets_opensource.json`
+  - Replace all occurences of `localhost` to the respective domain names (one for the mapeditor and 3 for keycloak)
 
 ## Details
 
