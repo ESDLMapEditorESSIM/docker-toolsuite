@@ -1,8 +1,8 @@
-version: '3.5'
+version: "3.5"
 
-networks:                
-  mapeditor-net:         
-    external:            
+networks:
+  mapeditor-net:
+    external:
       name: mapeditor-net
 
 services:
@@ -40,4 +40,4 @@ services:
       - INTERNAL_GRAFANA_PORT=3000
       - EXTERNAL_GRAFANA_URL=http://localhost:3000
     env_file:
-     - panel_service.env
+      - panel_service.env
