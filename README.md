@@ -236,7 +236,10 @@ You should see the following screen now:
 
 If you're installing this toolsuite to run ESSIM simulations or any other application that requires timeseries data, you need to upload some profiles. For that purpose we've created a profile manager. In the repository there is an example dataset with profiles created from publically available data (NEDU profiles for electricity and gas usage and KNMI solar profile).
 
-Click `View` and select `Settings` from the menu. The application settings dialog appears. Click `Upload profiles`.
+Click `View` and select `Settings` from the menu. The application settings dialog appears. Click `Upload profiles`. In the first drop down menu select:
+- Personal profiles: to upload profiles that will become available only for the current user
+- Standard profiles: to upload profiles that will become available for all users
+- Project profiles for ...: to upload profiles related to a project, so that all project members can use these profiles
 ![](Documentation/Images/settings-upload-profiles.png)
 
 Drag the file `.\Data\Profiles\standard_profiles_point.csv` and drop it in the area indicated in the dialog. Depending on your local machine's regional settings (Use '.' or ',' as the decimal seperator) you might need to choose the other csv file in the same directory.
