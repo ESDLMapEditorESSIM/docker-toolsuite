@@ -1,4 +1,4 @@
-version: '3.5'
+version: "3.5"
 
 volumes:
   mongo_storage:
@@ -133,4 +133,3 @@ services:
       - mapeditor-net
     volumes:
       - "./keycloak/:/tmp/config/"
-
