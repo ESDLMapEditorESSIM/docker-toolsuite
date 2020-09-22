@@ -13,6 +13,8 @@ This project contains all information necesarry to run the ESDL MapEditor and ES
     - [ESSIM Features](#essim-features)
   - [The architecture of the Toolsuite](#the-architecture-of-the-toolsuite)
   - [Setting up and running the software stack](#setting-up-and-running-the-software-stack)
+    - [Prerequisites](#prerequisites)
+	- [Steps to follow](#steps-to-follow)
     - [Step 1. Starting the software for the base infrastructure](#step-1-starting-the-software-for-the-base-infrastructure)
     - [Step 2. Import the keycloak settings for the MapEditor](#step-2-import-the-keycloak-settings-for-the-mapeditor)
     - [Step 3. Creating user accounts](#step-3-creating-user-accounts)
@@ -97,7 +99,16 @@ It consists of the following functionalities:
 
 Although the software was designed to run in a hosted environment somewhere in the cloud or in your in-company datacenter, the software can be run on a local laptop or PC as well. The following steps describe the installation process on a local machine. In [the cloud deployment chapter](#cloud-deployment) we'll give some directions for cloud deployment
 
-Steps to follow:
+### Prerequisites
+
+The current stack uses docker and docker-compose. The minimum versions required are currently:
+
+| Software       | Version  |
+| ---------------|----------|
+| Docker engine  | 19.03.12 |
+| docker-compose |   1.26.2 |
+
+### Steps to follow
 
 - [Step 1. Starting the software for the base infrastructure](#step-1-starting-the-software-for-the-base-infrastructure)
 - [Step 2. Import the keycloak settings for the MapEditor](#step-2-import-the-keycloak-settings-for-the-mapeditor)
