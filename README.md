@@ -361,7 +361,12 @@ ESDL Drive (API) is secured by KeyCloak and needs some configuration, among othe
 
 ESDL Drive also needs the public key of the ESDL-Mapeditor realm, to verify the JWT tokens from Keycloak. For this setup the public key is already added in the `public.p12` keystore, but if it is changed, edit the file in `/server/hub/resources/security/public.p12` with the Java `keytool`.
 
-...
+
+=======
+##### Data migration
+As ESDL is being updated frequently to support more use cases, the database schema of the ESDL Drive needs to be updated accordingly. 
+This is currently a manual process. See the [Data migration explanation](./DataMigration/README.md) for more information.
+
 
 Users/Password/Database
 
