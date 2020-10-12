@@ -365,7 +365,7 @@ ESDL Drive also needs the public key of the ESDL-Mapeditor realm, to verify the 
 =======
 ##### Data migration
 As ESDL is being updated frequently to support more use cases, the database schema of the ESDL Drive needs to be updated accordingly. 
-This is currently a manual process. See the [Data migration explanation](./DataMigration/README.md) for more information.
+This is currently a manual process. See the [Data migration explanation](./Documentation/DataMigration/README.md) for more information.
 
 
 Users/Password/Database
