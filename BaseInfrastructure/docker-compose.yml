@@ -31,7 +31,7 @@ services:
 
   influxdb:
     container_name: influxdb
-    image: influxdb:latest
+    image: influxdb:1.7
     ports:
       - "${INFLUXDB_PORT:-8086}:8086"
       - "${INFLUXDB_RPC_PORT:-8088}:8088"
@@ -112,7 +112,7 @@ services:
 
   keycloak:
     container_name: keycloak
-    image: jboss/keycloak:latest
+    image: jboss/keycloak:11.0.0
     restart: always
     environment:
       - DB_VENDOR=POSTGRES
