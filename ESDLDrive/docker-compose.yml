@@ -7,7 +7,7 @@ networks:
 
 services:
   cdo-server:
-    image: esdlmapeditoressim/cdo-server:20.08
+    image: esdlmapeditoressim/cdo-server:latest
     container_name: cdo-server
     ports:
       - "2036:2036"
@@ -26,7 +26,7 @@ services:
 
 
   esdl-drive: 
-    image: esdlmapeditoressim/esdl-drive:20.08
+    image: esdlmapeditoressim/esdl-drive:latest
     container_name: esdl-drive
     ports:
       - 9080:9080
