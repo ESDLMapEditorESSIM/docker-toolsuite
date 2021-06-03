@@ -140,6 +140,8 @@ docker cp keycloak/esdl-mapeditor-realm.json keycloak:/tmp/esdl-mapeditor-realm.
 
 Import the configuration in Keycloak. When the import is successful and keycloak has started successfully, you can Ctrl-C out of the container.
 
+The following line is only working in shells that accept the '\\' (Windows cmd will not work):
+
 ```sh
 docker exec -it keycloak /opt/jboss/keycloak/bin/standalone.sh \
   -Djboss.socket.binding.port-offset=100 \
@@ -148,6 +150,12 @@ docker exec -it keycloak /opt/jboss/keycloak/bin/standalone.sh \
   -Dkeycloak.migration.provider=singleFile \
   -Dkeycloak.migration.strategy=OVERWRITE_EXISTING \
   -Dkeycloak.migration.file=/tmp/esdl-mapeditor-realm.json
+```
+
+Windows users should copy this (long) line:
+
+```sh
+docker exec -it keycloak /opt/jboss/keycloak/bin/standalone.sh -Djboss.socket.binding.port-offset=100 -Dkeycloak.profile.feature.upload_scripts=enabled -Dkeycloak.migration.action=import -Dkeycloak.migration.provider=singleFile -Dkeycloak.migration.strategy=OVERWRITE_EXISTING -Dkeycloak.migration.file=/tmp/esdl-mapeditor-realm.json
 ```
 
 Restart the container to reload the ESDL-Mapeditor realm:
