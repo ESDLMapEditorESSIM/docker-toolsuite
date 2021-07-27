@@ -189,7 +189,7 @@ Go to the `Attributes` tab and add an attribute `role` with value `essim`, press
 
 ### Step 4. Configure role based access control for ESSIM dashboard
 
-The ESSIM dashboard is a Grafana based solution for viewing simulation results. Grafana supports multiple roles: Viewer, Editor and Admin. If you want to give some users other roles then Viewer, add the roles Editor and/or Admin to keycloak and assign these roles to the appropriate user. When you don't do this, all users get the Viewer rights.
+The ESSIM dashboard is a Grafana based solution for viewing simulation results. Grafana supports multiple roles: Viewer, Editor and Admin. If you want to give some users other roles than Viewer, add the roles Editor and/or Admin to keycloak and assign these roles to the appropriate user. When you don't do this, all users get the Viewer rights.
 
 Go to the user that needs to become an Editor or Admin, go to the `Role Mappings` tab, at `Client Roles` select `essim-dashboard` and add the Editor or Admin role to the user.
 ![](Documentation/Images/keycloak-essim-dashboard-assign-role-to-user.png)
