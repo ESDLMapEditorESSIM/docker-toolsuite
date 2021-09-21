@@ -261,7 +261,7 @@ Click `View` and select `Settings` from the menu. The application settings dialo
 - Project profiles for ...: to upload profiles related to a project, so that all project members can use these profiles
 ![](Documentation/Images/settings-upload-profiles.png)
 
-Drag the file `.\Data\Profiles\standard_profiles_point.csv` and drop it in the area indicated in the dialog. Depending on your local machine's regional settings (Use '.' or ',' as the decimal seperator) you might need to choose the other csv file in the same directory.
+Drag the file `.\Data\Profiles\standard_profiles.csv` and drop it in the area indicated in the dialog. Depending on your local machine's regional settings (Use '.' or ',' as the decimal seperator) you might need to choose the other csv file in the same directory.
 ![](Documentation/Images/settings-upload-profiles-done.png)
 
 After the uploading is finished, click `Profiles plugin` in the menu on the left. On the right side a window appears where you can view and edit the settings of the profiles you've just uploaded.
