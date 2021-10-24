@@ -121,7 +121,12 @@ The current stack uses docker and docker-compose. The minimum versions required 
 
 ### Step 1. Starting the software for the base infrastructure
 
-NOTE FOR WINDOWS USERS: when cloning this repository using git for windows, file line endings are automatically converted from LF (Unix style) to CRLF (Windows style). This causes problems for the file BaseInfrastructure/postgres/init-database.sh as it is being mounted in one of the docker containers running linux. Please make sure that this file gets Unix style line endings, by converting it back using for example notepad++ or dos2unix, or configure git in such a way that it doesn't automatically convert line endings to windows style (Search for 'git autocrlf')  
+---
+**NOTE FOR WINDOWS USERS:**
+
+When cloning this repository using git for windows, file line endings are automatically converted from LF (Unix style) to CRLF (Windows style). This causes problems for the file BaseInfrastructure/postgres/init-database.sh as it is being mounted in one of the docker containers running linux. Please make sure that this file gets Unix style line endings, by converting it back using for example notepad++ or dos2unix, or configure git in such a way that it doesn't automatically convert line endings to windows style (Search for 'git autocrlf').
+
+---
 
 Start the base infrastructure (databases, grafana, pgadmin, ...)
 
