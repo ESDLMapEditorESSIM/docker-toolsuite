@@ -1,5 +1,7 @@
 # Configuring Keycloak for the whole system
 
+Note: the steps below are now part of step 2 in the main tuturial in the root of this repository. This document is only here for documenting alternative steps to import and export Realms from Keycloak.
+
 ## Importing the ESDL-mapeditor realm
 Bring the base-infrastructure up (docker-compose up)
 Copy the config file:
@@ -12,11 +14,15 @@ Run the import:
 ```
 docker exec -it keycloak /opt/jboss/keycloak/bin/standalone.sh \
 	-Djboss.socket.binding.port-offset=100 \
-	-Dkeycloak.profile.feature.upload_scripts=enabled
+	-Dkeycloak.profile.feature.upload_scripts=enabled \
 	-Dkeycloak.migration.action=import \
 	-Dkeycloak.migration.provider=singleFile \
 	-Dkeycloak.migration.strategy=OVERWRITE_EXISTING \
 	-Dkeycloak.migration.file=/tmp/esdl-mapeditor-realm.json
+```
+or for non-Bash shells (e.g. Windows command prompt) everything on one line:
+```
+docker exec -it keycloak /opt/jboss/keycloak/bin/standalone.sh -Djboss.socket.binding.port-offset=100 -Dkeycloak.profile.feature.upload_scripts=enabled -Dkeycloak.migration.action=import -Dkeycloak.migration.provider=singleFile -Dkeycloak.migration.strategy=OVERWRITE_EXISTING -Dkeycloak.migration.file=/tmp/esdl-mapeditor-realm.json
 ```
 And press Ctrl-C when the server has successfully started and you see this:
 ```
