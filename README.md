@@ -108,6 +108,9 @@ The current stack uses docker and docker-compose. The minimum versions required 
 | Docker engine  | 19.03.12 |
 | docker-compose |   1.26.2 |
 
+> **_NOTE:_**  Macbook M1 users and users of the ARM64 architecture are experiencing difficulties when trying to install this software, because it is incompatible with the Intel x64 architecture we use on our servers and laptops. We are looking into creating multi-arch docker images but this is work in progress. For now: reach out to an Intel-based machine or VM to install this software.
+
+
 ### Steps to follow
 
 - [Step 1. Starting the software for the base infrastructure](#step-1-starting-the-software-for-the-base-infrastructure)
