@@ -1,6 +1,15 @@
 # ESDL MapEditor and ESSIM
 
-This project contains all information necesarry to run the ESDL MapEditor and ESSIM toolsuite on your local machine or cloud infrastructure.
+This project contains all information necesarry to run the open source ESDL MapEditor and ESSIM toolsuite on your local machine or cloud infrastructure.
+
+## Open source components (with Github links)
+
+This software stack consists of the following open source components with the link to their github repositories:
+- [ESDL MapEditor](https://github.com/ESDLMapEditorESSIM/esdl-mapeditor)
+- [ESDL Drive](https://github.com/ESDLMapEditorESSIM/esdl-drive)
+- [ESSIM](https://github.com/ESDLMapEditorESSIM/essim)
+- [Boundary Service](https://github.com/ESDLMapEditorESSIM/boundary-service)
+- [Panel Service](https://github.com/ESDLMapEditorESSIM/panel-service)
 
 ## Contents
 
