@@ -1,0 +1,259 @@
+version: "3.8"
+
+volumes:
+  mongo_storage:
+    driver: local
+  influxdb_storage:
+    driver: local
+  grafana_storage:
+    driver: local
+  postgres_storage:
+    driver: local
+  pgadmin_storage:
+    driver: local
+
+networks:
+  mapeditor-net:
+    driver: bridge
+    name: mapeditor-net
+
+services:
+  mapeditor:
+    image: esdlmapeditoressim/esdl-mapeditor:latest
+    # image: esdl-mapeditor:latest
+    profiles: ["mapeditor"]
+    networks:
+      - mapeditor-net
+    ports:
+      - "${MAPEDITOR_PORT:-8111}:8111"
+    env_file:
+      - ESDLMapEditor/mapeditor_open_source.env
+    depends_on:
+      influxdb:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+
+  boundary-service:
+    image: esdlmapeditoressim/boundary-service:latest
+    networks:
+      - mapeditor-net
+    ports:
+      - "${BOUNDARYSERVICE_PORT:-4002}:4002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  panel-service:
+    image: esdlmapeditoressim/panel-service:latest
+    ports:
+      - 3400:5000
+    networks:
+      - mapeditor-net
+    environment:
+      - ENV=dev
+      - INTERNAL_GRAFANA_HOST=grafana
+      - INTERNAL_GRAFANA_PORT=3000
+      - EXTERNAL_GRAFANA_URL=http://localhost:3000
+    env_file:
+      - ESDLMapEditor/panel_service.env
+
+  mongo:
+    image: mvertes/alpine-mongo
+    volumes:
+      - mongo_storage:/data/db
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo mongo:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    networks:
+      - mapeditor-net
+
+  influxdb:
+    image: influxdb:1.7
+    ports:
+      - "${INFLUXDB_PORT:-8086}:8086"
+      - "${INFLUXDB_RPC_PORT:-8088}:8088"
+    environment:
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=admin
+      - INFLUXDB_DB=panelservice
+      - INFLUXDB_WRITE_USER=panelservice
+      - INFLUXDB_WRITE_USER_PASSWORD=panelservice
+    volumes:
+      - influxdb_storage:/var/lib/influxdb
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://influxdb:8086/ping"]
+      interval: 10s
+      timeout: 5s
+    networks:
+      - mapeditor-net
+
+  grafana:
+    image: grafana/grafana:8.4.3
+    volumes:
+      - grafana_storage:/var/lib/grafana
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_SERVER_ROOT_URL=http://localhost:${GRAFANA_PORT:-3000}
+      - GF_SECURITY_ALLOW_EMBEDDING=True
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_PANELS_DISABLE_SANITIZE_HTML=true
+      - GF_AUTH_DISABLE_LOGIN_FORM=True
+      - GF_AUTH_BASIC_ENABLED=True
+      - GF_AUTH_OAUTH_AUTO_LOGIN=True
+      - GF_AUTH_GENERIC_OAUTH_ENABLED=True
+      - GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP=True
+      - GF_AUTH_GENERIC_OAUTH_NAME=Auth0
+      - GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH=contains(grafana_role, 'Admin') && 'Admin' || contains(grafana_role, 'Editor') && 'Editor' || 'Viewer'
+      - GF_AUTH_GENERIC_OAUTH_CLIENT_ID=essim-dashboard
+      - GF_AUTH_GENERIC_OAUTH_SCOPES=openid profile email
+      - GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=174522fe-db1c-4384-a3c5-eaa6dc03329b
+      - GF_AUTH_SIGNOUT_REDIRECT_URL=http://localhost:8080/auth/realms/esdl-mapeditor/protocol/openid-connect/logout?redirect_uri=http://localhost:${GRAFANA_PORT:-3000}
+      - GF_AUTH_GENERIC_OAUTH_AUTH_URL=http://localhost:8080/auth/realms/esdl-mapeditor/protocol/openid-connect/auth
+      - GF_AUTH_GENERIC_OAUTH_TOKEN_URL=http://keycloak:8080/auth/realms/esdl-mapeditor/protocol/openid-connect/token
+      - GF_AUTH_GENERIC_OAUTH_API_URL=http://keycloak:8080/auth/realms/esdl-mapeditor/protocol/openid-connect/userinfo
+    networks:
+      - mapeditor-net
+
+  postgres:
+    image: postgis/postgis:12-master
+    restart: always
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_storage:/var/lib/postgresql/data
+      - ./BaseInfrastructure/postgres/init-database.sh:/docker-entrypoint-initdb.d/init-database.sh
+      - ./Data/Boundaries:/data/boundaries
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-postgres}
+      - POSTGRES_USER=${POSTGRES_DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWD:-password}
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+    networks:
+      - mapeditor-net
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@admin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+    volumes:
+      - pgadmin_storage:/root/.pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    restart: unless-stopped
+    networks:
+      - mapeditor-net
+
+  cdo-server:
+    image: esdlmapeditoressim/cdo-server:22.06
+    ports:
+      - "2036:2036"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - POSTGRESQL_HOST=postgres
+      - POSTGRESQL_PORT=5432
+      - POSTGRESQL_USER=drive
+      - POSTGRESQL_PASSWORD=password
+      - POSTGRESQL_DATABASE=esdlrepo
+      #- AUTO_MIGRATE=1
+    networks:
+      - mapeditor-net
+
+  esdl-drive:
+    image: esdlmapeditoressim/esdl-drive:22.07
+    ports:
+      - 9080:9080
+      - 9443:9443
+    depends_on:
+      - cdo-server
+    links:
+      - cdo-server
+    environment:
+      - CDO_SERVER_HOST=cdo-server:2036
+      - KEYCLOAK_REALM=http://keycloak:8080/auth/realms/esdl-mapeditor
+      - KEYCLOAK_REALM_EXTERNAL=http://localhost:8080/auth/realms/esdl-mapeditor
+    networks:
+      - mapeditor-net
+
+  essim-engine:
+    image: esdlmapeditoressim/essim:35f7318
+    ports:
+      - 8112:8112
+    environment:
+      - HTTP_SERVER_SCHEME=http
+      - HTTP_SERVER_HOSTNAME=0.0.0.0
+      - HTTP_SERVER_PORT=8112
+      - HTTP_SERVER_PATH=essim
+      - MONGODB_HOST=mongo
+      - MONGODB_PORT=27017
+      - GRAFANA_ADMIN_USER=admin
+      - GRAFANA_ADMIN_PASSWORD=admin
+      - GRAFANA_INTERNAL_URL=http://grafana:3000
+      - GRAFANA_EXTERNAL_URL=http://localhost:3000
+    networks:
+      - mapeditor-net
+    depends_on:
+      - nats
+
+  nats:
+    image: esdlmapeditoressim/nats-server:latest
+    ports:
+      - 4222:4222
+      - 8222:8222
+      - 6222:6222
+    networks:
+      - mapeditor-net
+
+  keycloak:
+#    container_name: keycloak
+    image: jboss/keycloak:11.0.0
+    restart: always
+    environment:
+      - DB_VENDOR=POSTGRES
+      - DB_ADDR=postgres
+      - DB_DATABASE=keycloak
+      - DB_USER=keycloak
+      - DB_SCHEMA=public
+      - DB_PASSWORD=password
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=admin
+      - PROXY_ADDRESS_FORWARDING=true
+    ports:
+      - "${KEYCLOAK_PORT:-8080}:8080"
+      - "${KEYCLOAK_HTTPS_PORT:-8443}:8443"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - mapeditor-net
+    volumes:
+      - "./BaseInfrastructure/keycloak/:/tmp/config/"
+
+  rabbitmq:
+    image: bitnami/rabbitmq:3.9
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - mapeditor-net
+    environment:
+      - RABBITMQ_USERNAME=admin
+      - RABBITMQ_PASSWORD=admin
+#    volumes:
+#      - ./rabbitmq/rabbitmq.conf:/bitnami/rabbitmq/conf/rabbitmq.conf
