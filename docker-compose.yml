@@ -1,15 +1,23 @@
 version: "3.8"
 
 volumes:
+  # For backwards compatibility, use the "old" names.
+  # You might get a warning that these are external volumes. This can be ignored. In case this gives an error in a
+  # future version, add "external: true" to each volume.
   mongo_storage:
+    name: "baseinfrastructure_mongo_storage"
     driver: local
   influxdb_storage:
+    name: "baseinfrastructure_influxdb_storage"
     driver: local
   grafana_storage:
+    name: "baseinfrastructure_grafana_storage"
     driver: local
   postgres_storage:
+    name: "baseinfrastructure_postgres_storage"
     driver: local
   pgadmin_storage:
+    name: "baseinfrastructure_pgadmin_storage"
     driver: local
 
 networks:
