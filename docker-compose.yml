@@ -147,8 +147,8 @@ services:
       - POSTGRES_USER=${POSTGRES_DB_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWD:-password}
     healthcheck:
-      test: ["CMD", "pg_isready"]
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 15s
       timeout: 5s
     networks:
       - mapeditor-net
@@ -167,7 +167,7 @@ services:
       - mapeditor-net
 
   cdo-server:
-    image: esdlmapeditoressim/cdo-server:22.06
+    image: esdlmapeditoressim/cdo-server:23.03
     ports:
       - "2036:2036"
     depends_on:
@@ -184,7 +184,7 @@ services:
       - mapeditor-net
 
   esdl-drive:
-    image: esdlmapeditoressim/esdl-drive:22.07
+    image: esdlmapeditoressim/esdl-drive:23.03
     ports:
       - 9080:9080
       - 9443:9443
