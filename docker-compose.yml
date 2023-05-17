@@ -148,7 +148,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWD:-password}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
-      interval: 15s
+      interval: 15s # Set to 15 seconds to prevent a "Connection refused" error from boundary-service trying to connect to postgres. If you receive this error from boundary-service you can try raising this value.
       timeout: 5s
     networks:
       - mapeditor-net
