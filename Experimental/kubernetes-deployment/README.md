@@ -141,10 +141,10 @@ Uncomment every occurence of `  # storageClassName: azurefile-csi` in the persis
 
 ### Step 2. Log in to the ESDL MapEditor
 
-Using your webbrowser go to `http://localhost:8111`
+Using your webbrowser go to `https://domain.tld`
 ![](Documentation/Images/mapeditor-portal.png)
 
-Press `Start` and log in using the admin credentials.
+Press `Start` and log in using the generated admin credentials.
 ![](Documentation/Images/mapeditor-login-screen.png)
 
 You should see the following screen now:
