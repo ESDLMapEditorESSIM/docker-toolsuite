@@ -1,0 +1,124 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    app: grafana
+  name: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      # app: grafana
+      app: grafana
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: grafana
+    spec:
+      securityContext:
+        fsGroup: 472
+      containers:
+      - env:
+        - name: GF_API_KEY
+          value: "true"
+        - name: GF_AUTH_ANONYMOUS_ENABLED
+          value: "false"
+        - name: GF_AUTH_BASIC_ENABLED
+          value: "True"
+        - name: GF_AUTH_DISABLE_LOGIN_FORM
+          value: "True"
+        - name: GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP
+          value: "True"
+        - name: GF_AUTH_GENERIC_OAUTH_API_URL
+          value: http://keycloak:8080/auth/realms/esdl-mapeditor/protocol/openid-connect/userinfo
+        - name: GF_AUTH_GENERIC_OAUTH_AUTH_URL
+          value: https://keycloak.domain.tld/auth/realms/esdl-mapeditor/protocol/openid-connect/auth
+        - name: GF_AUTH_GENERIC_OAUTH_CLIENT_ID
+          value: essim-dashboard
+        - name: GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET
+          value: 174522fe-db1c-4384-a3c5-eaa6dc03329b
+        - name: GF_AUTH_GENERIC_OAUTH_ENABLED
+          value: "True"
+        - name: GF_AUTH_GENERIC_OAUTH_GRANT_TYPE
+          value: password
+        - name: GF_AUTH_GENERIC_OAUTH_NAME
+          value: Auth0
+        - name: GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH
+          value: contains(grafana_role, 'Admin') && 'Admin' || contains(grafana_role,
+            'Editor') && 'Editor' || 'Viewer'
+        - name: GF_AUTH_GENERIC_OAUTH_SCOPES
+          value: openid profile email
+        - name: GF_AUTH_GENERIC_OAUTH_TOKEN_URL
+          value: http://keycloak:8080/auth/realms/esdl-mapeditor/protocol/openid-connect/token
+        - name: GF_AUTH_OAUTH_AUTO_LOGIN
+          value: "True"
+        - name: GF_AUTH_SIGNOUT_REDIRECT_URL
+          value: https://keycloak.domain.tld/auth/realms/esdl-mapeditor/protocol/openid-connect/logout?redirect_uri=https://dashboard.domain.tld
+        - name: GF_PANELS_DISABLE_SANITIZE_HTML
+          value: "true"
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          value: "admin"
+        - name: GF_SECURITY_ADMIN_USER
+          value: admin
+        - name: GF_SECURITY_ALLOW_EMBEDDING
+          value: "True"
+        - name: GF_SERVER_ROOT_URL
+          value: https://dashboard.domain.tld
+        image: grafana/grafana:8.4.3
+        name: grafana
+        ports:
+        - containerPort: 3000
+        resources: {}
+        volumeMounts:
+        - mountPath: /var/lib/grafana
+          name: grafana-storage
+      restartPolicy: Always
+      volumes:
+      - name: grafana-storage
+        persistentVolumeClaim:
+          claimName: grafana-storage
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    app: grafana
+  name: grafana
+spec:
+  ports:
+  - name: "3000"
+    port: 3000
+    targetPort: 3000
+  selector:
+    app: grafana
+status:
+  loadBalancer: {}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana
+spec:
+  rules:
+  - host: "dashboard.domain.tld"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana
+            port: 
+              number: 3000

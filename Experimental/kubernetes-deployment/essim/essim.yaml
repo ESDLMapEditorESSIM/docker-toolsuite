@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    app: essim
+  name: essim
+spec:
+  replicas: 2
+  strategy: {}
+  selector:
+    matchLabels:
+      app: essim
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: essim
+    spec:
+      containers:
+      - env:
+        - name: GRAFANA_ADMIN_PASSWORD
+          value: admin
+        - name: GRAFANA_ADMIN_USER
+          value: admin
+        - name: GRAFANA_EXTERNAL_URL
+          value: https://dashboard.domain.tld
+        - name: GRAFANA_INTERNAL_URL
+          value: http://grafana:3000
+        - name: HTTP_SERVER_HOSTNAME
+          value: 0.0.0.0
+        - name: HTTP_SERVER_PATH
+          value: essim
+        - name: HTTP_SERVER_PORT
+          value: "8112"
+        - name: HTTP_SERVER_SCHEME
+          value: http
+        - name: MONGODB_HOST
+          value: mongo
+        - name: MONGODB_PORT
+          value: "27017"
+        - name: LOG_LEVEL
+          value: "debug"
+        image: esdlmapeditoressim/essim:35f7318
+        name: essim
+        ports:
+        - containerPort: 8112
+        resources: {}
+      restartPolicy: Always
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    app: essim
+  name: essim
+spec:
+  ports:
+  - name: "8112"
+    port: 8112
+    targetPort: 8112
+  selector:
+    app: essim
+status:
+  loadBalancer: {}

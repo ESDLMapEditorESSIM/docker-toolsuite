@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    app: boundary-service
+  name: boundary-service
+spec:
+  replicas: 1
+  strategy: {}
+  selector:
+    matchLabels:
+      app: boundary-service
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: boundary-service
+    spec:
+      containers:
+      - env:
+        - name: BOUNDARY_SERVICE_DATABASE_HOST
+          value: postgres
+        image: esdlmapeditoressim/boundary-service:latest
+        name: boundary-service
+        ports:
+        - containerPort: 4002
+        resources: {}
+      restartPolicy: Always
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    app: boundary-service
+  name: boundary-service
+spec:
+  ports:
+  - name: "4002"
+    port: 4002
+    targetPort: 4002
+  selector:
+    app: boundary-service
+status:
+  loadBalancer: {}

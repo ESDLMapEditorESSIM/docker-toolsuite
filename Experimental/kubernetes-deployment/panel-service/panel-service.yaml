@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    app: panel-service
+  name: panel-service
+spec:
+  replicas: 1
+  strategy: {}
+  selector:
+    matchLabels:
+      app: panel-service
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: panel-service
+    spec:
+      containers:
+      - env:
+        - name: ENV
+          value: dev
+        - name: EXTERNAL_GRAFANA_URL
+          value: https://dashboard.domain.tld
+        - name: GRAFANA_API_KEY
+          valueFrom:
+            configMapKeyRef:
+              key: GRAFANA_API_KEY
+              name: panel-service-panel-service-env
+        - name: INTERNAL_GRAFANA_HOST
+          value: grafana
+        - name: INTERNAL_GRAFANA_PORT
+          value: "3000"
+        image: esdlmapeditoressim/panel-service:latest
+        name: panel-service
+        ports:
+        - containerPort: 5000
+        resources: {}
+      restartPolicy: Always
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    app: panel-service
+  name: panel-service
+spec:
+  ports:
+  - name: "5000"
+    port: 5000
+    targetPort: 5000
+  selector:
+    app: panel-service
+status:
+  loadBalancer: {}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: panel-service
+spec:
+  rules:
+  - host: "panel-service.domain.tld"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: panel-service
+            port: 
+              number: 5000

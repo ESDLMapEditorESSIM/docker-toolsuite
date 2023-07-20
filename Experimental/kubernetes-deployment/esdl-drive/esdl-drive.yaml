@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    app: esdl-drive
+  name: esdl-drive
+spec:
+  replicas: 1
+  strategy: {}
+  selector:
+    matchLabels:
+      app: esdl-drive
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: esdl-drive
+    spec:
+      containers:
+      - env:
+        - name: CDO_SERVER_HOST
+          value: cdo-server:2036
+        - name: KEYCLOAK_REALM
+          value: http://keycloak:8080/auth/realms/esdl-mapeditor
+        - name: KEYCLOAK_REALM_EXTERNAL
+          value: https://keycloak.domain.tld/auth/realms/esdl-mapeditor
+        image: esdlmapeditoressim/esdl-drive:23.03
+        name: esdl-drive
+        ports:
+        - containerPort: 9080
+        - containerPort: 9443
+        resources: {}
+      restartPolicy: Always
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    app: esdl-drive
+  name: esdl-drive
+spec:
+  ports:
+  - name: "9080"
+    port: 9080
+    targetPort: 9080
+  - name: "9443"
+    port: 9443
+    targetPort: 9443
+  selector:
+    app: esdl-drive
+status:
+  loadBalancer: {}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: esdl-drive
+spec:
+  rules:
+  - host: "drive.domain.tld"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: esdl-drive
+            port: 
+              number: 9080

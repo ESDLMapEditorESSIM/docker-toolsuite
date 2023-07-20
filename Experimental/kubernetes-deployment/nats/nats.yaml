@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    app: nats
+  name: nats
+spec:
+  replicas: 1
+  strategy: {}
+  selector:
+    matchLabels:
+      app: nats
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: nats
+    spec:
+      containers:
+      - image: esdlmapeditoressim/nats-server:latest
+        name: nats
+        ports:
+        - containerPort: 4222
+        - containerPort: 8222
+        - containerPort: 6222
+        resources: {}
+      restartPolicy: Always
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    app: nats
+  name: nats
+spec:
+  ports:
+  - name: "4222"
+    port: 4222
+    targetPort: 4222
+  - name: "8222"
+    port: 8222
+    targetPort: 8222
+  - name: "6222"
+    port: 6222
+    targetPort: 6222
+  selector:
+    app: nats
+status:
+  loadBalancer: {}
