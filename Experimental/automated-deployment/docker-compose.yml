@@ -4,6 +4,8 @@ volumes:
   # For backwards compatibility, use the "old" names.
   # You might get a warning that these are external volumes. This can be ignored. In case this gives an error in a
   # future version, add "external: true" to each volume.
+  caddy_data:
+    external: true 
   mongo_storage:
     name: "baseinfrastructure_mongo_storage"
     driver: local
@@ -26,6 +28,17 @@ networks:
     name: mapeditor-net
 
 services:
+  caddy:
+    container_name: caddy
+    image: caddy:latest
+    ports:
+      - 443:443 #HTTPS
+      #- 80:80   #HTTP
+    volumes:
+      - caddy_data:/data
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+    network_mode: "host"
+        
   mapeditor:
     container_name: mapeditor
     image: esdlmapeditoressim/esdl-mapeditor:latest

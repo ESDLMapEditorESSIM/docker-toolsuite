@@ -99,14 +99,19 @@ It consists of the following functionalities:
 
 Although the software was designed to run in a hosted environment somewhere in the cloud or in your in-company datacenter, the software can be run on a local laptop or PC as well. The following steps describe the installation process on a local machine. In [the cloud deployment chapter](#cloud-deployment) we'll give some directions for cloud deployment
 
+Caddy was added as a reverse proxy and to terminate SSL traffic, if you wish to use this version on your own device, comment anything that has something to do with Caddy out.
+
 ### Prerequisites
 
 The current stack uses docker and docker-compose. The minimum versions required are currently:
 
-| Software       | Version  |
-| ---------------|----------|
-| Docker engine  | 19.03.12 |
-| docker-compose |   1.26.2 |
+| Software       | Version    |
+| ---------------|------------|
+| Docker engine  |   19.03.12 |
+| docker-compose |     1.26.2 |
+| GNU/Linux      | Any recent | (If you have Windows you can attempt to translate the setup.sh script into powershell or run it on WSL)
+| Bash           |        Any |
+| Curl           |        Any |
 
 > **_NOTE:_**  Macbook M1 users and users of the ARM64 architecture are experiencing difficulties when trying to install this software, because it is incompatible with the Intel x64 architecture we use on our servers and laptops. We are looking into creating multi-arch docker images but this is work in progress. For now: reach out to an Intel-based machine or VM to install this software.
 

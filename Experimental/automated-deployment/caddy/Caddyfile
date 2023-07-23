@@ -1,19 +1,19 @@
-dashboard.pebesma.xyz {
+dashboard.domain.tld {
     reverse_proxy localhost:3000
 }
 
-panel-service.pebesma.xyz {
+panel-service.domain.tld {
     reverse_proxy localhost:3400
 }
 
-mapeditor.pebesma.xyz {
+mapeditor.domain.tld {
     reverse_proxy localhost:8111
 }
 
-keycloak.pebesma.xyz {
+keycloak.domain.tld {
     reverse_proxy localhost:8080
 }
 
-drive.pebesma.xyz {
+drive.domain.tld {
     reverse_proxy localhost:9080
 }
