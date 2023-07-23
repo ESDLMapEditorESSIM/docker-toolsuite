@@ -1,0 +1,19 @@
+dashboard.pebesma.xyz {
+    reverse_proxy localhost:3000
+}
+
+panel-service.pebesma.xyz {
+    reverse_proxy localhost:3400
+}
+
+mapeditor.pebesma.xyz {
+    reverse_proxy localhost:8111
+}
+
+keycloak.pebesma.xyz {
+    reverse_proxy localhost:8080
+}
+
+drive.pebesma.xyz {
+    reverse_proxy localhost:9080
+}

@@ -106,11 +106,11 @@ Recommended:
 
 ### Steps to follow
 
-- [Step 1. Modifying the Kubernetes files](#step-1-modifying-the-kubernetes-files)
+- [Step 1. Modifying the Kubernetes files and scripts](#step-1-modifying-the-kubernetes-files-and-scripts)
 - [Step 2. Log in to the ESDL MapEditor](#step-2-log-in-to-the-esdl-mapeditor)
 - [Step 3. Upload some profiles](#step-3-upload-some-profiles)
 
-### Step 1. Modifying the Kubernetes files
+### Step 1. Modifying the Kubernetes files and scripts
 
 ---
 **NOTE FOR WINDOWS USERS:**
@@ -138,6 +138,8 @@ In traefik-values.yaml, uncomment the following:
 ```
 Change the ipv4 address to the ipv4 address of the public ip in the Resource Group created by Azure Kubernetes Services.
 Uncomment every occurence of `  # storageClassName: azurefile-csi` in the persistent volume claim files.
+
+Once this is done, you can start the toolsuite by running ./setup.sh. Be sure to have a stable internet connection.
 
 ### Step 2. Log in to the ESDL MapEditor
 
