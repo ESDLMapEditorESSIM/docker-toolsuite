@@ -1,4 +1,4 @@
-version: "3.5"
+version: "3.8"
 
 volumes:
   mongo_storage:
@@ -25,6 +25,11 @@ services:
       - mongo_storage:/data/db
     ports:
       - "${MONGO_PORT:-27017}:27017"
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo mongo:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
     networks:
       - mapeditor-net
 
@@ -40,6 +45,10 @@ services:
       - INFLUXDB_DB=panelservice
       - INFLUXDB_WRITE_USER=panelservice
       - INFLUXDB_WRITE_USER_PASSWORD=panelservice
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://influxdb:8086/ping"]
+      interval: 10s
+      timeout: 5s
     volumes:
       - influxdb_storage:/var/lib/influxdb
     networks:
@@ -51,7 +60,8 @@ services:
     volumes:
       - grafana_storage:/var/lib/grafana
     depends_on:
-      - influxdb
+      influxdb:
+        condition: service_healthy
     ports:
       - "${GRAFANA_PORT:-3000}:3000"
     environment:
@@ -81,7 +91,7 @@ services:
   postgres:
     container_name: postgres
     image: postgis/postgis:12-master
-    restart: always
+    #restart: always
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
@@ -92,6 +102,10 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-postgres}
       - POSTGRES_USER=${POSTGRES_DB_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWD:-password}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 15s # Set to 15 seconds to prevent a "Connection refused" error from boundary-service trying to connect to postgres. If you receive this error from boundary-service you can try raising this value.
+      timeout: 5s
     networks:
       - mapeditor-net
 
@@ -111,18 +125,26 @@ services:
 
   keycloak:
     container_name: keycloak
-    image: jboss/keycloak:11.0.0
-    restart: always
+    image: quay.io/keycloak/keycloak:22.0.1 
+    #restart: always
     environment:
       - DB_VENDOR=POSTGRES
       - DB_ADDR=postgres
       - DB_DATABASE=keycloak
       - DB_USER=keycloak
       - DB_SCHEMA=public
-      - DB_PASSWORD=password
-      - KEYCLOAK_USER=admin
-      - KEYCLOAK_PASSWORD=admin
+      - DB_PASSWORD=${POSTGRES_KEYCLOAK_PASSWORD:?error}
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:?error}
       - PROXY_ADDRESS_FORWARDING=true
+    command:
+      - start-dev  # start (production with TLS) or start-dev for development (less strict security)
+        #- --hostname-strict=false
+        #      - --hostname=localhost  # required for production servers
+        #- --hostname-debug=true
+        #- --features="scripts" # for importing realms with js insite them
+        #- --proxy=edge  # for external TLS termination by e.g. nginx
+      - --import-realm  # import realm
     ports:
       - "${KEYCLOAK_PORT:-8080}:8080"
       - "${KEYCLOAK_HTTPS_PORT:-8443}:8443"
@@ -131,4 +153,4 @@ services:
     networks:
       - mapeditor-net
     volumes:
-      - "./keycloak/:/tmp/config/"
+      - "./keycloak/:/opt/keycloak/data/import"

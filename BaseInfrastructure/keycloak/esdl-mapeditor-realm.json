@@ -711,43 +711,8 @@
       }
     } ],
     "defaultClientScopes" : [ "web-origins", "user_group", "role_list", "profile", "roles", "groups", "microprofile-jwt", "user_group_path", "email" ],
-    "optionalClientScopes" : [ "address", "phone", "offline_access" ],
-    "authorizationSettings" : {
-      "allowRemoteResourceManagement" : true,
-      "policyEnforcementMode" : "ENFORCING",
-      "resources" : [ {
-        "name" : "Default Resource",
-        "type" : "urn:cdo-mondaine:resources:default",
-        "ownerManagedAccess" : false,
-        "attributes" : { },
-        "_id" : "b1581ad4-f280-4613-b494-291ddaf42b91",
-        "uris" : [ "/*" ]
-      } ],
-      "policies" : [ {
-        "id" : "c7762587-37a1-4d1e-853f-2a8004a19c3e",
-        "name" : "Default Policy",
-        "description" : "A policy that grants access only for users within this realm",
-        "type" : "js",
-        "logic" : "POSITIVE",
-        "decisionStrategy" : "AFFIRMATIVE",
-        "config" : {
-          "code" : "// by default, grants any permission associated with this policy\n$evaluation.grant();\n"
-        }
-      }, {
-        "id" : "c5679468-c100-407e-84b8-1cd6f327070b",
-        "name" : "Default Permission",
-        "description" : "A permission that applies to the default resource type",
-        "type" : "resource",
-        "logic" : "POSITIVE",
-        "decisionStrategy" : "UNANIMOUS",
-        "config" : {
-          "defaultResourceType" : "urn:cdo-mondaine:resources:default",
-          "applyPolicies" : "[\"Default Policy\"]"
-        }
-      } ],
-      "scopes" : [ ],
-      "decisionStrategy" : "UNANIMOUS"
-    }
+    "optionalClientScopes" : [ "address", "phone", "offline_access" ]
+    
   }, {
     "id" : "d831b9b7-10f6-45d1-ab10-621ff861dd5b",
     "clientId" : "curl",
@@ -907,43 +872,7 @@
       }
     } ],
     "defaultClientScopes" : [ "web-origins", "user_group", "esdl-mapeditor", "role_list", "profile", "roles", "groups", "essim", "user_group_path", "email" ],
-    "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ],
-    "authorizationSettings" : {
-      "allowRemoteResourceManagement" : true,
-      "policyEnforcementMode" : "ENFORCING",
-      "resources" : [ {
-        "name" : "Default Resource",
-        "type" : "urn:esdl-mapeditor:resources:default",
-        "ownerManagedAccess" : false,
-        "attributes" : { },
-        "_id" : "15837b62-6f56-4bf8-8e5d-9bc11fee8bc4",
-        "uris" : [ "/*" ]
-      } ],
-      "policies" : [ {
-        "id" : "73ea742a-d75c-4e94-929e-8b5c2819c27e",
-        "name" : "Default Policy",
-        "description" : "A policy that grants access only for users within this realm",
-        "type" : "js",
-        "logic" : "POSITIVE",
-        "decisionStrategy" : "AFFIRMATIVE",
-        "config" : {
-          "code" : "// by default, grants any permission associated with this policy\n$evaluation.grant();\n"
-        }
-      }, {
-        "id" : "094b1414-16bc-4009-a835-233df07c438f",
-        "name" : "Default Permission",
-        "description" : "A permission that applies to the default resource type",
-        "type" : "resource",
-        "logic" : "POSITIVE",
-        "decisionStrategy" : "UNANIMOUS",
-        "config" : {
-          "defaultResourceType" : "urn:esdl-mapeditor:resources:default",
-          "applyPolicies" : "[\"Default Policy\"]"
-        }
-      } ],
-      "scopes" : [ ],
-      "decisionStrategy" : "UNANIMOUS"
-    }
+    "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ]
   }, {
     "id" : "603d98fb-fd82-446a-aec4-03abc7a0ebd4",
     "clientId" : "essim-dashboard",
@@ -1044,43 +973,7 @@
       }
     } ],
     "defaultClientScopes" : [ "web-origins", "role_list", "profile", "roles", "email" ],
-    "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ],
-    "authorizationSettings" : {
-      "allowRemoteResourceManagement" : true,
-      "policyEnforcementMode" : "ENFORCING",
-      "resources" : [ {
-        "name" : "Default Resource",
-        "type" : "urn:essim-dashboard:resources:default",
-        "ownerManagedAccess" : false,
-        "attributes" : { },
-        "_id" : "29d13743-6cab-4cbf-9cd9-402dfb36e5d6",
-        "uris" : [ "/*" ]
-      } ],
-      "policies" : [ {
-        "id" : "ff1f21cb-d568-4091-b41c-b4fe5c7a9538",
-        "name" : "Default Policy",
-        "description" : "A policy that grants access only for users within this realm",
-        "type" : "js",
-        "logic" : "POSITIVE",
-        "decisionStrategy" : "AFFIRMATIVE",
-        "config" : {
-          "code" : "// by default, grants any permission associated with this policy\n$evaluation.grant();\n"
-        }
-      }, {
-        "id" : "3af5b7f7-7863-4e27-81d1-a2886f9df850",
-        "name" : "Default Permission",
-        "description" : "A permission that applies to the default resource type",
-        "type" : "resource",
-        "logic" : "POSITIVE",
-        "decisionStrategy" : "UNANIMOUS",
-        "config" : {
-          "defaultResourceType" : "urn:essim-dashboard:resources:default",
-          "applyPolicies" : "[\"Default Policy\"]"
-        }
-      } ],
-      "scopes" : [ ],
-      "decisionStrategy" : "UNANIMOUS"
-    }
+    "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ]
   }, {
     "id" : "0eb5ebad-abba-4f01-b2af-56c4874059c4",
     "clientId" : "realm-management",
