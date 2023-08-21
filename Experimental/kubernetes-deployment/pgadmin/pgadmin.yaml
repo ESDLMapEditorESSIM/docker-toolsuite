@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    app: pgadmin
+  name: pgadmin
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: pgadmin
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: pgadmin
+    spec:
+      containers:
+      - env:
+        - name: PGADMIN_DEFAULT_EMAIL
+          value: admin@admin.org
+        - name: PGADMIN_DEFAULT_PASSWORD
+          value: password
+        image: dpage/pgadmin4
+        name: pgadmin
+        ports:
+        - containerPort: 80
+        resources: {}
+        volumeMounts:
+        - mountPath: /root/.pgadmin
+          name: pgadmin-storage
+      restartPolicy: Always
+      volumes:
+      - name: pgadmin-storage
+        persistentVolumeClaim:
+          claimName: pgadmin-storage
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    app: pgadmin
+  name: pgadmin
+spec:
+  type: NodePort
+  ports:
+  - name: "80"
+    port: 80
+    targetPort: 80
+    nodePort: 30050
+  selector:
+    app: pgadmin
+status:
+  loadBalancer: {}

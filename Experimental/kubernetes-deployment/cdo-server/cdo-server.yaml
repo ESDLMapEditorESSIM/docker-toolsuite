@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    app: cdo-server
+  name: cdo-server
+spec:
+  replicas: 1
+  strategy: {}
+  selector:
+    matchLabels:
+      app: cdo-server  
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: cdo-server
+    spec:
+      containers:
+      - env:
+        - name: POSTGRESQL_DATABASE
+          value: esdlrepo
+        - name: POSTGRESQL_HOST
+          value: postgres
+        - name: POSTGRESQL_PASSWORD
+          value: password #${POSTGRES_DRIVE_PASSWORD:?error}
+        - name: POSTGRESQL_PORT
+          value: "5432"
+        - name: POSTGRESQL_USER
+          value: drive
+        - name: AUTO_UPDATE
+          value: "1"
+        image: esdlmapeditoressim/cdo-server:23.03
+        name: cdo-server
+        ports:
+        - containerPort: 2036
+        resources: {}
+      restartPolicy: Always
+status: {}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    app: cdo-server
+  name: cdo-server
+spec:
+  ports:
+  - name: "2036"
+    port: 2036
+    targetPort: 2036
+  selector:
+    app: cdo-server
+status:
+  loadBalancer: {}
+

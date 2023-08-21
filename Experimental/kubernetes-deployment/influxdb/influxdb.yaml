@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    app: influxdb
+  name: influxdb
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: influxdb
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: influxdb
+    spec:
+      containers:
+      - env:
+        - name: INFLUXDB_ADMIN_PASSWORD
+          value: admin
+        - name: INFLUXDB_ADMIN_USER
+          value: admin
+        - name: INFLUXDB_DB
+          value: panelservice
+        - name: INFLUXDB_WRITE_USER
+          value: panelservice
+        - name: INFLUXDB_WRITE_USER_PASSWORD
+          value: panelservice
+        image: influxdb:1.7
+        # livenessProbe:
+        #   exec:
+        #     command:
+        #     - curl
+        #     - -f
+        #     - http://influxdb:8086/ping
+        #   periodSeconds: 10
+        #   timeoutSeconds: 5
+        name: influxdb
+        ports:
+        - containerPort: 8086
+        resources: {}
+        volumeMounts:
+        - mountPath: /var/lib/influxdb
+          name: influxdb-storage
+      restartPolicy: Always
+      volumes:
+      - name: influxdb-storage
+        persistentVolumeClaim:
+          claimName: influxdb-storage
+status: {}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    app: influxdb
+  name: influxdb
+spec:
+  ports:
+  - name: "8086"
+    port: 8086
+    targetPort: 8086
+  selector:
+    app: influxdb
+status:
+  loadBalancer: {}
+

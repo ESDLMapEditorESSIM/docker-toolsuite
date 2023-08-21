@@ -1,0 +1,217 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    app: mapeditor
+  name: mapeditor
+spec:
+  replicas: 1
+  strategy: {}
+  selector:
+    matchLabels:
+      app: mapeditor
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: mapeditor
+    spec:
+      initContainers:
+      - name: mapeditor-client-secrets
+        image: esdlmapeditoressim/esdl-mapeditor:latest
+        command: ['sh', '-c', "sed -e 's#http://localhost:8080#https://keycloak.domain.tld#g' -e 's#http://localhost:8111#https://domain.tld#g' credentials/client_secrets_opensource.json > credentials/client-secrets/client_secrets_opensource.json"]
+        volumeMounts:
+        - mountPath: /usr/src/app/credentials/client-secrets/
+          name: mapeditor-claim0
+      containers:
+      - env:
+        - name: BAG_SERVICE_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: BAG_SERVICE_HOST
+              name: mapeditor-mapeditor-open-source-env
+        - name: BAG_SERVICE_PORT
+          valueFrom:
+            configMapKeyRef:
+              key: BAG_SERVICE_PORT
+              name: mapeditor-mapeditor-open-source-env
+        - name: BOUNDARY_SERVICE_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: BOUNDARY_SERVICE_HOST
+              name: mapeditor-mapeditor-open-source-env
+        - name: EDR_URL
+          valueFrom:
+            configMapKeyRef:
+              key: EDR_URL
+              name: mapeditor-mapeditor-open-source-env
+        - name: ESDL_DRIVE_URL
+          valueFrom:
+            configMapKeyRef:
+              key: ESDL_DRIVE_URL
+              name: mapeditor-mapeditor-open-source-env
+        - name: ESDL_STORE_URL
+          valueFrom:
+            configMapKeyRef:
+              key: ESDL_STORE_URL
+              name: mapeditor-mapeditor-open-source-env
+        - name: ESSIM_DATABASE_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: ESSIM_DATABASE_HOST
+              name: mapeditor-mapeditor-open-source-env
+        - name: ESSIM_GRAFANA_URL
+          valueFrom:
+            configMapKeyRef:
+              key: ESSIM_GRAFANA_URL
+              name: mapeditor-mapeditor-open-source-env
+        - name: ESSIM_INFLUX_URL
+          valueFrom:
+            configMapKeyRef:
+              key: ESSIM_INFLUX_URL
+              name: mapeditor-mapeditor-open-source-env
+        - name: ESSIM_LOADFLOW_URL
+          valueFrom:
+            configMapKeyRef:
+              key: ESSIM_LOADFLOW_URL
+              name: mapeditor-mapeditor-open-source-env
+        - name: ESSIM_URL
+          valueFrom:
+            configMapKeyRef:
+              key: ESSIM_URL
+              name: mapeditor-mapeditor-open-source-env
+        - name: FLASK_DEBUG
+          valueFrom:
+            configMapKeyRef:
+              key: FLASK_DEBUG
+              name: mapeditor-mapeditor-open-source-env
+        - name: IBIS_SERVICE_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: IBIS_SERVICE_HOST
+              name: mapeditor-mapeditor-open-source-env
+        - name: IBIS_SERVICE_PORT
+          valueFrom:
+            configMapKeyRef:
+              key: IBIS_SERVICE_PORT
+              name: mapeditor-mapeditor-open-source-env
+        - name: MAPEDITOR_USE_GEVENT
+          valueFrom:
+            configMapKeyRef:
+              key: MAPEDITOR_USE_GEVENT
+              name: mapeditor-mapeditor-open-source-env
+        - name: MONDAINE_HUB_URL
+          valueFrom:
+            configMapKeyRef:
+              key: MONDAINE_HUB_URL
+              name: mapeditor-mapeditor-open-source-env
+        - name: OIDC_CLIENT_SECRETS
+          valueFrom:
+            configMapKeyRef:
+              key: OIDC_CLIENT_SECRETS
+              name: mapeditor-mapeditor-open-source-env
+        - name: PANEL_SERVICE_INTERNAL_URL
+          valueFrom:
+            configMapKeyRef:
+              key: PANEL_SERVICE_INTERNAL_URL
+              name: mapeditor-mapeditor-open-source-env
+        - name: PANEL_SERVICE_EXTERNAL_URL
+          valueFrom:
+            configMapKeyRef:
+              key: PANEL_SERVICE_EXTERNAL_URL
+              name: mapeditor-mapeditor-open-source-env
+        - name: PANEL_SERVICE_PROFILE_DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: PANEL_SERVICE_PROFILE_DB_HOST
+              name: mapeditor-mapeditor-open-source-env
+        - name: PROFILE_DATABASE_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: PROFILE_DATABASE_HOST
+              name: mapeditor-mapeditor-open-source-env
+        - name: SETTINGS_STORAGE_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: SETTINGS_STORAGE_HOST
+              name: mapeditor-mapeditor-open-source-env
+        - name: SETTINGS_STORAGE_PORT
+          valueFrom:
+            configMapKeyRef:
+              key: SETTINGS_STORAGE_PORT
+              name: mapeditor-mapeditor-open-source-env
+        - name: SETTINGS_TITLE
+          valueFrom:
+            configMapKeyRef:
+              key: SETTINGS_TITLE
+              name: mapeditor-mapeditor-open-source-env
+        - name: STATISTICS_SERVICE_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: STATISTICS_SERVICE_HOST
+              name: mapeditor-mapeditor-open-source-env
+        - name: STATISTICS_SERVICE_PORT
+          valueFrom:
+            configMapKeyRef:
+              key: STATISTICS_SERVICE_PORT
+              name: mapeditor-mapeditor-open-source-env
+        - name: USER_LOGGING_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: USER_LOGGING_HOST
+              name: mapeditor-mapeditor-open-source-env
+        image: esdlmapeditoressim/esdl-mapeditor:latest
+        name: mapeditor
+        ports:
+        - containerPort: 8111
+        resources: {}
+        volumeMounts:
+        - mountPath: /usr/src/app/credentials/client-secrets/
+          name: mapeditor-claim0
+      restartPolicy: Always
+      volumes:
+      - name: mapeditor-claim0
+        persistentVolumeClaim:
+          claimName: mapeditor-claim0
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    app: mapeditor
+  name: mapeditor
+spec:
+  ports:
+  - name: "8111"
+    port: 8111
+    targetPort: 8111
+  selector:
+    app: mapeditor
+status:
+  loadBalancer: {}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mapeditor
+spec:
+  rules:
+  - host: "domain.tld"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mapeditor
+            port: 
+              number: 8111
