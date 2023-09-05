@@ -137,9 +137,12 @@ services:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:?error}
       - PROXY_ADDRESS_FORWARDING=true
+      - KC_OVERRIDE=false
     command:
+      - -Dkeycloak.migration.strategy=IGNORE_EXISTING
       - start-dev  # start (production with TLS) or start-dev for development (less strict security)
       - --http-relative-path=/auth   # for compatiblity with keycloak <17  
+      - --hostname-path=/auth
         #- --hostname-strict=false
         #      - --hostname=localhost  # required for production servers
         #- --hostname-debug=true
