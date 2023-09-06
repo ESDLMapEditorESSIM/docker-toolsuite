@@ -128,12 +128,14 @@ services:
     image: quay.io/keycloak/keycloak:22.0.1 
     #restart: always
     environment:
-      - DB_VENDOR=POSTGRES
-      - DB_ADDR=postgres
-      - DB_DATABASE=keycloak
-      - DB_USER=keycloak
-      - DB_SCHEMA=public
-      - DB_PASSWORD=${POSTGRES_KEYCLOAK_PASSWORD:?error}
+      - KC_DB=postgres
+        #- KC_DB_URL="jdbc:postgresql://postgres:${POSTGRES_PORT:-5432}/keycloak"
+      - KC_DB_URL_DATABASE=keycloak
+      - KC_DB_URL_HOST=postgres
+      - KC_DB_URL_PORT=${POSTGRES_PORT:-5432}
+      - KC_DB_SCHEMA=public
+      - KC_DB_USERNAME=keycloak
+      - KC_DB_PASSWORD=${POSTGRES_KEYCLOAK_PASSWORD:?error}
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:?error}
       - PROXY_ADDRESS_FORWARDING=true
@@ -141,11 +143,13 @@ services:
     command:
       - -Dkeycloak.migration.strategy=IGNORE_EXISTING
       - start-dev  # start (production with TLS) or start-dev for development (less strict security)
+      - --health-enabled=true  # enable /health, /health/ready and /health/live endpoints
       - --http-relative-path=/auth   # for compatiblity with keycloak <17  
-      - --hostname-path=/auth
-        #- --hostname-strict=false
-        #      - --hostname=localhost  # required for production servers
-        #- --hostname-debug=true
+        #- --hostname-path=/auth
+      - --hostname-strict=false    # for local dev testing between containern names and localhost
+      - --hostname=localhost  # required for production servers
+      - --hostname-debug=true
+        #- --hostname-url=http://localhost:8080/
         #- --features="scripts" # for importing realms with js insite them
         #- --proxy=edge  # for external TLS termination by e.g. nginx
       - --import-realm  # import realm
