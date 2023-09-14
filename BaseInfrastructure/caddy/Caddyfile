@@ -23,9 +23,10 @@
 
 
 {$PROTOCOL}://{$KEYCLOAK_DOMAIN} {
- import whitelist
+  import whitelist
 
-  handle /auth/admin* {
+  @admin-paths path / /auth /auth/admin* /auth/welcome* /auth/metrics* /auth/health*
+  handle @admin-paths {
     import whitelist-admin
   }
   reverse_proxy keycloak:8080
