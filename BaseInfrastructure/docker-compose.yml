@@ -177,6 +177,8 @@ services:
       - GRAFANA_DOMAIN=${GRAFANA_DOMAIN}
       - NEW_USER_EMAIL=${NEW_USER_EMAIL}
       - ALLOW_COUNTRIES=${ALLOW_COUNTRIES}
+      - WHITELIST_IP=${WHITELIST_IP}
+      - WHITELIST_IP_ADMIN=${WHITELIST_IP_ADMIN}
     ports:
       - "80:80"
       - "443:443"
@@ -188,6 +190,7 @@ services:
           - ${MAPEDITOR_DOMAIN}
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./caddy/GeoLite2-Country.mmdb:/geo-db/GeoLite2-Country.mmdb
     depends_on:
       - keycloak
       - grafana

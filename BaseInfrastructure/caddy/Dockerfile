@@ -9,4 +9,3 @@ FROM caddy:${CADDY_VERSION}
 
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 RUN mkdir /geo-db/
-COPY ./GeoLite2-Country_20230912.mmdb /geo-db/GeoLite2-Country.mmdb

@@ -128,6 +128,9 @@ When cloning this repository using git for windows, file line endings are automa
 
 ---
 
+First download the geo ip database file from `https://www.maxmind.com/`. You can create a free account if necessary.
+Download the `GeoLite2 Country` database in `.mmdb` format. Move it to `BaseInfrastructure\caddy\GeoLite2-Country.mmdb`.
+
 Start the base infrastructure (databases, grafana, pgadmin, ...)
 
 ```sh

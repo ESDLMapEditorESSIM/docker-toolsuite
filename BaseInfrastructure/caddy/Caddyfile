@@ -10,14 +10,14 @@
         allow_countries {$ALLOW_COUNTRIES}
       }
 
-      not remote_ip 139.63.127.0/24 private_ranges
+      not remote_ip {$WHITELIST_IP} private_ranges
   }
 
   abort @geolocation
 }
 
 (whitelist-admin) {
-  @denied_admin not remote_ip 139.63.127.0/24 private_ranges
+  @denied_admin not remote_ip {$WHITELIST_IP_ADMIN} private_ranges
   abort @denied_admin
 }
 
