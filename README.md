@@ -173,7 +173,7 @@ docker-compose restart keycloak
 
 ### Step 3. Creating user accounts
 
-Using you webbrowser, go to `http://localhost:8080` to open keycloak
+Using you webbrowser, go to `http://localhost:8080/auth` to open keycloak
 ![](Documentation/Images/keycloak-portal.png)
 
 Login with the admin credentials as specified in the docker-compose file
@@ -310,17 +310,14 @@ The following picture shows how a deployment with a reverse proxy
 ![](Documentation/Images/deployment-with-reverse-proxy.png)
 
 Required changes:
-
-- In `BaseInfrastructure\docker-compose.yml`
-  - Find `GF_SERVER_ROOT_URL`: change `localhost` to the domain name for the ESSIM dashboard
-  - Find `GF_AUTH_SIGNOUT_REDIRECT_URL`: change two (!) occurences of `localhost` to the domain name for keycloak
-  - Find `GF_AUTH_GENERIC_OAUTH_AUTH_URL`: change `localhost` to the domain name for keycloak
+- In `ESDLMapEditor\docker-compose.yml`
+  - Find `EXTERNAL_GRAFANA_URL`: change `localhost` to the domain name for mapeditor
 - In `BaseInfrastructure\keycloak\esdl-mapeditor-realm.json` (or login to keycloak and change using their web-based management interface)
   - Replace all occurences of `localhost:port` to the respective domain names
 - In `ESDLMapeditor\mapeditor_open_source.env`:
   - Find `PANEL_SERVICE_EXTERNAL_URL`: replace `localhost` with the domain name of the panel service
-- (To be improved) Inside the MapEditor container, find the file `credentials\client_secrets_opensource.json`
-  - Replace all occurences of `localhost` to the respective domain names (one for the mapeditor and 3 for keycloak)
+- (To be improved)  `ESDLMapeditor\mesdl_mapeditor\client_secrets_opensource.json`
+  - Replace all occurences of `https://some-domain.nl` and `https://keycloak.some-domain.nl` to the respective domain names (1 for the mapeditor and 2 for keycloak)
 
 ## Details
 

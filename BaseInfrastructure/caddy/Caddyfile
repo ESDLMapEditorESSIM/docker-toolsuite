@@ -1,0 +1,42 @@
+{
+  admin off
+  email {$NEW_USER_EMAIL}
+}
+
+(whitelist) {
+  @geolocation {
+      not maxmind_geolocation {
+        db_path "/geo-db/GeoLite2-Country.mmdb"
+        allow_countries {$ALLOW_COUNTRIES}
+      }
+
+      not remote_ip 139.63.127.0/24 private_ranges
+  }
+
+  abort @geolocation
+}
+
+(whitelist-admin) {
+  @denied_admin not remote_ip 139.63.127.0/24 private_ranges
+  abort @denied_admin
+}
+
+
+{$PROTOCOL}://{$KEYCLOAK_DOMAIN} {
+ import whitelist
+
+  handle /auth/admin* {
+    import whitelist-admin
+  }
+  reverse_proxy keycloak:8080
+}
+
+{$PROTOCOL}://{$GRAFANA_DOMAIN} {
+  import whitelist
+  reverse_proxy grafana:3000
+}
+
+{$PROTOCOL}://{$MAPEDITOR_DOMAIN} {
+  import whitelist
+  reverse_proxy mapeditor:8111
+}

@@ -66,10 +66,10 @@ services:
       - "${GRAFANA_PORT:-3000}:3000"
     environment:
       - GF_AUTH_ANONYMOUS_ENABLED=false
-      - GF_SERVER_ROOT_URL=http://localhost:${GRAFANA_PORT:-3000}
+      - GF_SERVER_ROOT_URL=${PROTOCOL}://${GRAFANA_DOMAIN}
       - GF_SECURITY_ALLOW_EMBEDDING=True
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
       - GF_PANELS_DISABLE_SANITIZE_HTML=true
       - GF_AUTH_DISABLE_LOGIN_FORM=True
       - GF_AUTH_BASIC_ENABLED=True
@@ -78,11 +78,11 @@ services:
       - GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP=True
       - GF_AUTH_GENERIC_OAUTH_NAME=Auth0
       - GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH=contains(grafana_role, 'Admin') && 'Admin' || contains(grafana_role, 'Editor') && 'Editor' || 'Viewer'
-      - GF_AUTH_SIGNOUT_REDIRECT_URL=http://localhost:8080/auth/realms/esdl-mapeditor/protocol/openid-connect/logout?redirect_uri=http://localhost:${GRAFANA_PORT:-3000}
+      - GF_AUTH_SIGNOUT_REDIRECT_URL=${PROTOCOL}://${KEYCLOAK_DOMAIN}/auth/realms/esdl-mapeditor/protocol/openid-connect/logout
       - GF_AUTH_GENERIC_OAUTH_CLIENT_ID=essim-dashboard
       - GF_AUTH_GENERIC_OAUTH_SCOPES=openid profile email
       - GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=174522fe-db1c-4384-a3c5-eaa6dc03329b
-      - GF_AUTH_GENERIC_OAUTH_AUTH_URL=http://localhost:8080/auth/realms/esdl-mapeditor/protocol/openid-connect/auth
+      - GF_AUTH_GENERIC_OAUTH_AUTH_URL=${PROTOCOL}://${KEYCLOAK_DOMAIN}/auth/realms/esdl-mapeditor/protocol/openid-connect/auth
       - GF_AUTH_GENERIC_OAUTH_TOKEN_URL=http://keycloak:8080/auth/realms/esdl-mapeditor/protocol/openid-connect/token
       - GF_AUTH_GENERIC_OAUTH_API_URL=http://keycloak:8080/auth/realms/esdl-mapeditor/protocol/openid-connect/userinfo
     networks:
@@ -91,7 +91,7 @@ services:
   postgres:
     container_name: postgres
     image: postgis/postgis:12-master
-    #restart: always
+    restart: unless-stopped
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
@@ -128,8 +128,8 @@ services:
 
   keycloak:
     container_name: keycloak
-    image: quay.io/keycloak/keycloak:22.0.1 
-    #restart: always
+    image: quay.io/keycloak/keycloak:22.0.1
+    restart: unless-stopped
     environment:
       - KC_DB=postgres
         #- KC_DB_URL="jdbc:postgresql://postgres:${POSTGRES_PORT:-5432}/keycloak"
@@ -145,16 +145,17 @@ services:
       - KC_OVERRIDE=false
     command:
       - -Dkeycloak.migration.strategy=IGNORE_EXISTING
-      - start-dev  # start (production with TLS) or start-dev for development (less strict security)
+      - start  # start (production with TLS) or start-dev for development (less strict security)
       - --health-enabled=true  # enable /health, /health/ready and /health/live endpoints
-      - --http-relative-path=/auth   # for compatiblity with keycloak <17  
-        #- --hostname-path=/auth
-      - --hostname-strict=false    # for local dev testing between containern names and localhost
-      - --hostname=localhost  # required for production servers
-      - --hostname-debug=true
-        #- --hostname-url=http://localhost:8080/
+      - --http-relative-path=/auth   # for compatiblity with keycloak <17
+      - --hostname-path=/auth
+        #- --hostname-strict=false    # for local dev testing between containern names and localhost
+        #- --hostname=${KEYCLOAK_DOMAIN}  # required for production servers
+        #- --hostname-debug=true
+      - --hostname-url=${PROTOCOL}://${KEYCLOAK_DOMAIN}/auth
+      - --hostname-admin-url=${PROTOCOL}://${KEYCLOAK_DOMAIN}/auth
         #- --features="scripts" # for importing realms with js insite them
-        #- --proxy=edge  # for external TLS termination by e.g. nginx
+      - --proxy=edge  # for external TLS termination by e.g. nginx
       - --import-realm  # import realm
     ports:
       - "${KEYCLOAK_PORT:-8080}:8080"
@@ -165,3 +166,28 @@ services:
       - mapeditor-net
     volumes:
       - "./keycloak/:/opt/keycloak/data/import"
+
+  caddy:
+    image: esdlmapeditoressim/caddy-with-geoip:${CADDY_VERSION}
+    restart: unless-stopped
+    environment:
+      - PROTOCOL=${PROTOCOL}
+      - MAPEDITOR_DOMAIN=${MAPEDITOR_DOMAIN}
+      - KEYCLOAK_DOMAIN=${KEYCLOAK_DOMAIN}
+      - GRAFANA_DOMAIN=${GRAFANA_DOMAIN}
+      - NEW_USER_EMAIL=${NEW_USER_EMAIL}
+      - ALLOW_COUNTRIES=${ALLOW_COUNTRIES}
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      mapeditor-net:
+        aliases:
+          - ${GRAFANA_DOMAIN}
+          - ${KEYCLOAK_DOMAIN}
+          - ${MAPEDITOR_DOMAIN}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+    depends_on:
+      - keycloak
+      - grafana
