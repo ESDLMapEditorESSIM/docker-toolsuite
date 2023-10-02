@@ -1,32 +1,34 @@
 #!/bin/bash
 BASEDIR=$(cd $(dirname $0) | pwd)
+NAMESPACE="namespace_name"
+kubectl create namespace ${NAMESPACE}
 
 # Traefik
-helm install -f $BASEDIR/traefik/traefik-values.yaml traefik traefik/traefik
+helm install -n $NAMESPACE -f $BASEDIR/traefik/traefik-values.yaml traefik traefik/traefik
 
 # postgres
-kubectl apply -f $BASEDIR/postgres/boundaries-persistentvolumeclaim.yaml
-kubectl apply -f $BASEDIR/postgres/init-database-persistentvolumeclaim.yaml
-kubectl apply -f $BASEDIR/postgres/postgres-storage-persistentvolumeclaim.yaml
+kubectl apply -n $NAMESPACE -f $BASEDIR/postgres/boundaries-persistentvolumeclaim.yaml
+kubectl apply -n $NAMESPACE -f $BASEDIR/postgres/init-database-persistentvolumeclaim.yaml
+kubectl apply -n $NAMESPACE -f $BASEDIR/postgres/postgres-storage-persistentvolumeclaim.yaml
 
 sleep 1
 
-kubectl apply -f $BASEDIR/postgres/postgres.yaml
-POSTGRES=$(kubectl get pods --no-headers -o custom-columns=":metadata.name" | grep postgres)
+kubectl apply -n $NAMESPACE -f $BASEDIR/postgres/postgres.yaml
+POSTGRES=$(kubectl get pods -n $NAMESPACE --no-headers -o custom-columns=":metadata.name" | grep postgres)
 PG_STATUS=0
 while [ $PG_STATUS != "Running" ]
 do
   sleep 10
-  PG_STATUS=$(kubectl get pods --no-headers -o custom-columns=":status.phase, :metadata.name" | grep postgres | awk '{print $1;}')
+  PG_STATUS=$(kubectl get pods -n $NAMESPACE --no-headers -o custom-columns=":status.phase, :metadata.name" | grep postgres | awk '{print $1;}')
 done
 
 sleep 3
 
 kubectl cp $BASEDIR/postgres/data/boundaries $POSTGRES:/data/
 sleep 1
-kubectl cp $BASEDIR/postgres/data/Profiles $POSTGRES:/data/
+kubectl cp -n $NAMESPACE $BASEDIR/postgres/data/Profiles $POSTGRES:/data/
 sleep 1
-kubectl cp $BASEDIR/postgres/init-database.sh $POSTGRES:/docker-entrypoint-initdb.d/
+kubectl cp -n $NAMESPACE $BASEDIR/postgres/init-database.sh $POSTGRES:/docker-entrypoint-initdb.d/
 sleep 1
 BACKUP=0
 
@@ -54,54 +56,54 @@ BACKUP=0
 # # --------------------------------------------------------------------------------------------- #
 
 sleep 3
-kubectl exec $POSTGRES /docker-entrypoint-initdb.d/init-database.sh 
+kubectl exec -n $NAMESPACE $POSTGRES /docker-entrypoint-initdb.d/init-database.sh 
 
 # influxdb
-kubectl apply -f $BASEDIR/influxdb/influxdb-storage-persistentvolumeclaim.yaml
-kubectl apply -f $BASEDIR/influxdb/influxdb.yaml
+kubectl apply -n $NAMESPACE -f $BASEDIR/influxdb/influxdb-storage-persistentvolumeclaim.yaml
+kubectl apply -n $NAMESPACE -f $BASEDIR/influxdb/influxdb.yaml
 
 # mongo
-kubectl apply -f $BASEDIR/mongo/mongo-storage-persistentvolumeclaim.yaml
-kubectl apply -f $BASEDIR/mongo/mongo.yaml
+kubectl apply -n $NAMESPACE -f $BASEDIR/mongo/mongo-storage-persistentvolumeclaim.yaml
+kubectl apply -n $NAMESPACE -f $BASEDIR/mongo/mongo.yaml
 
 # boundary-service
-kubectl apply -f $BASEDIR/boundary-service/boundary-service.yaml
+kubectl apply -n $NAMESPACE -f $BASEDIR/boundary-service/boundary-service.yaml
 
 # nats
-kubectl apply -f $BASEDIR/nats/nats.yaml
+kubectl apply -n $NAMESPACE -f $BASEDIR/nats/nats.yaml
 
 # keycloak
-kubectl apply -f $BASEDIR/keycloak/keycloak-claim0-persistentvolumeclaim.yaml
-kubectl apply -f $BASEDIR/keycloak/keycloak-config.yaml
-kubectl apply -f $BASEDIR/keycloak/keycloak.yaml
-KEYCLOAK=$(kubectl get pods --no-headers -o custom-columns=":metadata.name" | grep keycloak)
+kubectl apply -n $NAMESPACE -f $BASEDIR/keycloak/keycloak-claim0-persistentvolumeclaim.yaml
+kubectl apply -n $NAMESPACE -f $BASEDIR/keycloak/keycloak-config.yaml
+kubectl apply -n $NAMESPACE -f $BASEDIR/keycloak/keycloak.yaml
+KEYCLOAK=$(kubectl get pods -n $NAMESPACE --no-headers -o custom-columns=":metadata.name" | grep keycloak)
 KEYCLOAK_STATUS=0
 while [ $KEYCLOAK_STATUS != "Running" ]
 do
   sleep 10
-  KEYCLOAK_STATUS=$(kubectl get pods --no-headers -o custom-columns=":status.phase, :metadata.name" | grep keycloak | awk '{print $1;}')
+  KEYCLOAK_STATUS=$(kubectl get pods -n $NAMESPACE --no-headers -o custom-columns=":status.phase, :metadata.name" | grep keycloak | awk '{print $1;}')
 done
-kubectl cp $BASEDIR/keycloak/esdl-mapeditor-realm.json $KEYCLOAK:/tmp/
-kubectl cp $BASEDIR/keycloak/init.sh $KEYCLOAK:/tmp/
+kubectl cp -n $NAMESPACE $BASEDIR/keycloak/esdl-mapeditor-realm.json $KEYCLOAK:/tmp/
+kubectl cp -n $NAMESPACE $BASEDIR/keycloak/init.sh $KEYCLOAK:/tmp/
 # IF A BACKUP IS BEING IMPORTED, SKIP THE KEYCLOAK REALM INITIATION BY CREATING THE '/tmp/initialized' FOLDER (SEE REPO: /keycloak/init.sh)
 if [ $BACKUP = 1 ]; then
   echo "BACKUP DETECTED"
-  kubectl exec -it $KEYCLOAK touch /tmp/initialized
+  kubectl exec -n $NAMESPACE -it $KEYCLOAK touch /tmp/initialized
 fi
-kubectl exec -it $KEYCLOAK /tmp/init.sh
+kubectl exec -n $NAMESPACE -it $KEYCLOAK /tmp/init.sh
 
 # cdo-server
-kubectl apply -f $BASEDIR/cdo-server/cdo-server.yaml
+kubectl apply -n $NAMESPACE -f $BASEDIR/cdo-server/cdo-server.yaml
 
 # grafana
-kubectl apply -f $BASEDIR/grafana/grafana-storage-persistentvolumeclaim.yaml
-kubectl apply -f $BASEDIR/grafana/grafana.yaml
-GRAFANA=$(kubectl get pods --no-headers -o custom-columns=":metadata.name" | grep grafana)
+kubectl apply -n $NAMESPACE -f $BASEDIR/grafana/grafana-storage-persistentvolumeclaim.yaml
+kubectl apply -n $NAMESPACE -f $BASEDIR/grafana/grafana.yaml
+GRAFANA=$(kubectl get pods -n $NAMESPACE --no-headers -o custom-columns=":metadata.name" | grep grafana)
 GRAFANA_STATUS=0
 while [ $GRAFANA_STATUS != "Running" ]
 do
   sleep 10
-  GRAFANA_STATUS=$(kubectl get pods --no-headers -o custom-columns=":status.phase, :metadata.name" | grep grafana | awk '{print $1;}')
+  GRAFANA_STATUS=$(kubectl get pods -n $NAMESPACE --no-headers -o custom-columns=":status.phase, :metadata.name" | grep grafana | awk '{print $1;}')
 done
 
 # panel-service
@@ -115,19 +117,19 @@ echo "GRAFANA_API_KEY: $GRAFANA_API_KEY"
 # Replace the API key in the file using sed
 sed -i "s/GRAFANA_API_KEY:.*/GRAFANA_API_KEY: $GRAFANA_API_KEY/" $BASEDIR/panel-service/panel-service-panel-service-env-configmap.yaml
 
-kubectl apply -f $BASEDIR/panel-service/panel-service-panel-service-env-configmap.yaml
-kubectl apply -f $BASEDIR/panel-service/panel-service.yaml
+kubectl apply -n $NAMESPACE -f $BASEDIR/panel-service/panel-service-panel-service-env-configmap.yaml
+kubectl apply -n $NAMESPACE -f $BASEDIR/panel-service/panel-service.yaml
 
 # drive
-kubectl apply -f $BASEDIR/esdl-drive/esdl-drive.yaml
+kubectl apply -n $NAMESPACE -f $BASEDIR/esdl-drive/esdl-drive.yaml
 
 # essim
-kubectl apply -f $BASEDIR/essim/essim.yaml
+kubectl apply -n $NAMESPACE -f $BASEDIR/essim/essim.yaml
 
 # mapeditor
-kubectl apply -f $BASEDIR/mapeditor/mapeditor-mapeditor-open-source-env-configmap.yaml
-kubectl apply -f $BASEDIR/mapeditor/mapeditor-claim0-persistentvolumeclaim.yaml
-kubectl apply -f $BASEDIR/mapeditor/mapeditor.yaml
+kubectl apply -n $NAMESPACE -f $BASEDIR/mapeditor/mapeditor-mapeditor-open-source-env-configmap.yaml
+kubectl apply -n $NAMESPACE -f $BASEDIR/mapeditor/mapeditor-claim0-persistentvolumeclaim.yaml
+kubectl apply -n $NAMESPACE -f $BASEDIR/mapeditor/mapeditor.yaml
 
 ### CREATE ADMIN USER IN KEYCLOAK
 PROTOCOL=https
