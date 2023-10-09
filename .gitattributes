@@ -1,0 +1,2 @@
+# Always keep LF line endings (instead of CRLF) to enable shell scripts to be mounted in Docker images
+*.sh text eol=lf
