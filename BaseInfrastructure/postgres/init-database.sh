@@ -11,6 +11,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     CREATE USER drive WITH ENCRYPTED PASSWORD 'password';
     CREATE DATABASE esdlrepo OWNER drive;
     GRANT ALL PRIVILEGES ON DATABASE esdlrepo TO drive;
+    ALTER USER drive CREATEDB;
 EOSQL
 
 psql --username "$POSTGRES_USER" --dbname boundaries -c "CREATE EXTENSION postgis;"
