@@ -116,8 +116,6 @@ The current stack uses docker and docker compose. The tested versions are curren
 | Docker engine  |  26.1.3 |
 | Docker Compose |   2.6.1 |
 
-> **_NOTE:_**  Macbook M1 users and users of the ARM64 architecture are experiencing difficulties when trying to install this software, because it is incompatible with the Intel x64 architecture we use on our servers and laptops. We are looking into creating multi-arch docker images but this is work in progress. For now: reach out to an Intel-based machine or VM to install this software.
-
 
 ### Steps to follow
 
@@ -239,11 +237,14 @@ Press `Start` and log in using the credentials created in the previous step
 
 You should see the following screen now:
 ![](Documentation/Images/mapeditor-main-page.png)
+
 The ESDL Mapeditor is ready to be used!
 
 ### Step 7. Upload some profiles
 
 If you're installing this toolsuite to run ESSIM simulations or any other application that requires timeseries data, you need to upload some profiles. For that purpose we've created a profile manager. In the repository there is an example dataset with profiles created from publically available data (NEDU profiles for electricity and gas usage and KNMI solar profile).
+
+> _NOTE:_ Recent versions of the ESDL MapEditor are integrated with the Energy Data Repository ([EDR](https://edr.hesi.energy/)) and profiles present in the EDR are now also accessible from the ESDL MapEditor!
 
 Click `View` and select `Settings` from the menu. The application settings dialog appears. Click `Upload profiles`. In the first drop down menu select:
 - Personal profiles: to upload profiles that will become available only for the current user
