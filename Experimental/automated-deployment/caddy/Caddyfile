@@ -1,0 +1,19 @@
+dashboard.domain.tld {
+    reverse_proxy localhost:3000
+}
+
+panel-service.domain.tld {
+    reverse_proxy localhost:3400
+}
+
+mapeditor.domain.tld {
+    reverse_proxy localhost:8111
+}
+
+keycloak.domain.tld {
+    reverse_proxy localhost:8080
+}
+
+drive.domain.tld {
+    reverse_proxy localhost:9080
+}

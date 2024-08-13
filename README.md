@@ -24,14 +24,13 @@ This software stack consists of the following open source components with the li
   - [Setting up and running the software stack](#setting-up-and-running-the-software-stack)
     - [Prerequisites](#prerequisites)
 	- [Steps to follow](#steps-to-follow)
-    - [Step 1. Starting the software for the base infrastructure](#step-1-starting-the-software-for-the-base-infrastructure)
-    - [Step 2. Import the keycloak settings for the MapEditor](#step-2-import-the-keycloak-settings-for-the-mapeditor)
-    - [Step 3. Creating user accounts](#step-3-creating-user-accounts)
-    - [Step 4. Configure role based access control for ESSIM dashboard](#step-4-configure-role-based-access-control-for-essim-dashboard)
-    - [Step 5. Create an API key in Grafana for the Panel Service](#step-5-create-an-api-key-in-grafana-for-the-panel-service)
-    - [Step 6. Start the MapEditor and ESSIM](#step-6-start-the-mapeditor-and-essim)
-    - [Step 7. Log in to the ESDL MapEditor](#step-7-log-in-to-the-esdl-mapeditor)
-    - [Step 8. Upload some profiles](#step-8-upload-some-profiles)
+    - [Step 1. Configuring and starting the software for the base infrastructure](#step-1-configuring-and-starting-the-software-for-the-base-infrastructure)
+    - [Step 2. Creating user accounts](#step-2-creating-user-accounts)
+    - [Step 3. Configure role based access control for ESSIM dashboard](#step-3-configure-role-based-access-control-for-essim-dashboard)
+    - [Step 4. Create an API key in Grafana for the Panel Service](#step-4-create-an-api-key-in-grafana-for-the-panel-service)
+    - [Step 5. Start the MapEditor and ESSIM](#step-5-start-the-mapeditor-and-essim)
+    - [Step 6. Log in to the ESDL MapEditor](#step-6-log-in-to-the-esdl-mapeditor)
+    - [Step 7. Upload some profiles](#step-7-upload-some-profiles)  
   - [ESDL MapEditor and ESSIM Tutorials](#esdl-mapeditor-and-essim-tutorials)
   - [Cloud deployment](#cloud-deployment)
   - [Details](#details)
@@ -45,7 +44,7 @@ This software stack consists of the following open source components with the li
 
 ## What can I do with the MapEditor and ESSIM?
 
-The ESDL MapEditor is a map based energy system editor. You can use it to create ESDL based energy system descriptions, that can then be simulated with a growing number of ESDL capable simulators.
+The ESDL MapEditor is a map-based energy system editor. You can use it to create ESDL based energy system descriptions, that can then be simulated with a growing number of ESDL-capable simulators, or processed with ESDL-capable tools.
 ESSIM is our ESDL based energy system simulator that gives insights in the hourly energy (im)balance of an energy system described in the ESDL language.
 
 ![Toolsuite GUI impression](Documentation/Images/toolsuite-gui-impression.png)
@@ -95,9 +94,9 @@ It consists of the following functionalities:
 
 - ESDL MapEditor: map based scenario editor
 - ESSIM: energy system simulator, to calculate hourly energy balance and give insights in effects of conversion and storage
-- Identity & Access Management: using keycloak, an open-source IAM solution, it provides user management, roles, groups, organisations, authentication and authorisation, role based access control
-- ESDL Drive: cloud storage for ESDL files, with access control at user, group or organisation level (supports versioning in the near future)
-- Panel Service: service to create graphs from influxdb time series
+- Identity & Access Management: using Keycloak, an open-source IAM solution, it provides user management, roles, groups, organisations, authentication and authorisation, role based access control
+- ESDL Drive: cloud storage for ESDL files, with access control at user, group or organisation level (supports git-like versioning)
+- Panel Service: service to create graphs from InfluxDB time series data
 - Boundary Service: service that gives boundary information for provinces, municipalities, neighbourhoods, and so on
 - Grafana: open-source analytics & monitoring solution for every database
 - InfluxDB: open-source time series database solution
@@ -110,110 +109,81 @@ Although the software was designed to run in a hosted environment somewhere in t
 
 ### Prerequisites
 
-The current stack uses docker and docker-compose. The minimum versions required are currently:
+The current stack uses docker and docker compose. The tested versions are currently:
 
-| Software       | Version  |
-| ---------------|----------|
-| Docker engine  | 19.03.12 |
-| docker-compose |   1.26.2 |
+| Software       | Version |
+| ---------------|---------|
+| Docker engine  |  26.1.3 |
+| Docker Compose |   2.6.1 |
 
 > **_NOTE:_**  Macbook M1 users and users of the ARM64 architecture are experiencing difficulties when trying to install this software, because it is incompatible with the Intel x64 architecture we use on our servers and laptops. We are looking into creating multi-arch docker images but this is work in progress. For now: reach out to an Intel-based machine or VM to install this software.
 
 
 ### Steps to follow
 
-- [Step 1. Starting the software for the base infrastructure](#step-1-starting-the-software-for-the-base-infrastructure)
-- [Step 2. Import the keycloak settings for the MapEditor](#step-2-import-the-keycloak-settings-for-the-mapeditor)
-- [Step 3. Creating user accounts](#step-3-creating-user-accounts)
-- [Step 4. Configure role based access control for ESSIM dashboard](#step-4-configure-role-based-access-control-for-essim-dashboard)
-- [Step 5. Create an API key in Grafana for the Panel Service](#step-5-create-an-api-key-in-grafana-for-the-panel-service)
-- [Step 6. Start the MapEditor and ESSIM](#step-6-start-the-mapeditor-and-essim)
-- [Step 7. Log in to the ESDL MapEditor](#step-7-log-in-to-the-esdl-mapeditor)
-- [Step 8. Upload some profiles](#step-8-upload-some-profiles)
+- [Step 1. Configuring and starting the software for the base infrastructure](#step-1-configuring-and-starting-the-software-for-the-base-infrastructure)
+- [Step 2. Creating user accounts](#step-2-creating-user-accounts)
+- [Step 3. Configure role based access control for ESSIM dashboard](#step-3-configure-role-based-access-control-for-essim-dashboard)
+- [Step 4. Create an API key in Grafana for the Panel Service](#step-4-create-an-api-key-in-grafana-for-the-panel-service)
+- [Step 5. Start the MapEditor and ESSIM](#step-5-start-the-mapeditor-and-essim)
+- [Step 6. Log in to the ESDL MapEditor](#step-6-log-in-to-the-esdl-mapeditor)
+- [Step 7. Upload some profiles](#step-7-upload-some-profiles)
 
-### Step 1. Starting the software for the base infrastructure
+### Step 1. Configuring and starting the software for the base infrastructure
 
 ---
 **NOTE FOR WINDOWS USERS:**
 
-When cloning this repository using git for windows, file line endings are automatically converted from LF (Unix style) to CRLF (Windows style). This causes problems for the file BaseInfrastructure/postgres/init-database.sh as it is being mounted in one of the docker containers running linux. Please make sure that this file gets Unix style line endings, by converting it back using for example notepad++ or dos2unix, or configure git in such a way that it doesn't automatically convert line endings to windows style (Search for 'git autocrlf').
+When cloning this repository using git for windows, file line endings are automatically converted from LF (Unix style) to CRLF (Windows style). This causes problems for the file `BaseInfrastructure/postgres/init-database.sh` as it is being mounted in one of the docker containers running linux. Please make sure that this file gets Unix style line endings, by converting it back using for example notepad++ or dos2unix, or configure git in such a way that it doesn't automatically convert line endings to windows style (Search for 'git autocrlf').
 
 ---
 
+To configure the base infrastructure have a look at the `.env.template` file in de `BaseInfrastructure` folder and copy it to a `.env` file and adapt to your situation (defaults should work out of the box for a localhost installation, but are not secure).
+
 Start the base infrastructure (databases, grafana, pgadmin, ...)
+
 
 ```sh
 cd BaseInfrastructure
 docker-compose up
 ```
+> Note: use `docker-compose up -d` to start the base infrastructure in the background.
 
-### Step 2. Import the keycloak settings for the MapEditor
+Wait for the base infrastructure to be ready.
 
-Execute the following three commands from the `BaseInfrastructure` directory or follow detailed instructions [here](./BaseInfrastructure/keycloak/README.md)
+### Step 2. Creating user accounts
 
-Copy the configuration in the keycloak container.
+Using you webbrowser, go to `http://localhost:8080/auth` to login to keycloak (Note: don't forget the `/auth`, this is needed for newer Keycloak versions to be compatible with older versions). 
 
-```sh
-docker cp keycloak/esdl-mapeditor-realm.json keycloak:/tmp/esdl-mapeditor-realm.json
-```
-
-Import the configuration in Keycloak. When the import is successful and keycloak has started successfully, you can Ctrl-C out of the container.
-
-The following line is only working in shells that accept the '\\' (Windows cmd will not work):
-
-```sh
-docker exec -it keycloak /opt/jboss/keycloak/bin/standalone.sh \
-  -Djboss.socket.binding.port-offset=100 \
-  -Dkeycloak.profile.feature.upload_scripts=enabled \
-  -Dkeycloak.migration.action=import \
-  -Dkeycloak.migration.provider=singleFile \
-  -Dkeycloak.migration.strategy=OVERWRITE_EXISTING \
-  -Dkeycloak.migration.file=/tmp/esdl-mapeditor-realm.json
-```
-
-Windows users should copy this (long) line:
-
-```sh
-docker exec -it keycloak /opt/jboss/keycloak/bin/standalone.sh -Djboss.socket.binding.port-offset=100 -Dkeycloak.profile.feature.upload_scripts=enabled -Dkeycloak.migration.action=import -Dkeycloak.migration.provider=singleFile -Dkeycloak.migration.strategy=OVERWRITE_EXISTING -Dkeycloak.migration.file=/tmp/esdl-mapeditor-realm.json
-```
-
-Restart the container to reload the ESDL-Mapeditor realm:
-
-```sh
-docker-compose restart keycloak
-```
-
-### Step 3. Creating user accounts
-
-Using you webbrowser, go to `http://localhost:8080` to open keycloak
-![](Documentation/Images/keycloak-portal.png)
-
-Login with the admin credentials as specified in the docker-compose file
+Login with the admin credentials as specified in the docker-compose file or your adapted `.env` file.
 ![](Documentation/Images/keycloak-login-screen.png)
 
-Once you're logged in, you should see the following screen
-![](Documentation/Images/keycloak-loggedin.png)
+Once you're logged in, you see a welcome for the master realm (e.g. to configure other realms, or change the admin password).
+![](Documentation/Images/keycloak-loggedin-master.png)
+
+Select the `ESDL Studio (esdl-mapeditor)` realm using the drop-down on the top-left.
+![](Documentation/Images/keycloak-loggedin-esdlstudio.png)
 
 Click `Users` from the menu on the left
 ![](Documentation/Images/keycloak-users.png)
 
-Click `Add User` and fill in the proper user credentials and click `Save`. Be sure to fill in an email address!
+Click `Add User` and fill in the proper user information and click `Create`. Be sure to fill in an email address!
 ![](Documentation/Images/keycloak-add-user.png)
 
-After clicking `Save` a number of tabs appear. Go to the `Credentials` tab and set the password of the newly created user
+After clicking `Save` a number of tabs appear. Go to the `Credentials` tab, select `Set password` and set the password of the newly created user in the popup. 
 ![](Documentation/Images/keycloak-set-password.png)
 
-Go to the `Attributes` tab and add an attribute `role` with value `essim`, press `Add` and press `Save`
+Go to the `Attributes` tab and add an attribute with `role` as key and with `essim` as value, and press `Save`.
 ![](Documentation/Images/keycloak-set-attributes.png)
 
-### Step 4. Configure role based access control for ESSIM dashboard
+### Step 3. Configure role based access control for ESSIM dashboard
 
-The ESSIM dashboard is a Grafana based solution for viewing simulation results. Grafana supports multiple roles: Viewer, Editor and Admin. If you want to give some users other roles than Viewer, add the roles Editor and/or Admin to keycloak and assign these roles to the appropriate user. When you don't do this, all users get the Viewer rights.
+The ESSIM dashboard is a Grafana based solution for viewing simulation results. Grafana supports multiple roles: Viewer, Editor and Admin. If you want to give some users other roles than Viewer, add the roles Editor and/or Admin to Keycloak and assign these roles to the appropriate user. When you don't do this, all users get the Viewer rights.
 
-Go to the user that needs to become an Editor or Admin, go to the `Role Mappings` tab, at `Client Roles` select `essim-dashboard` and add the Editor or Admin role to the user.
-![](Documentation/Images/keycloak-essim-dashboard-assign-role-to-user.png)
+Go to the user that needs to become an Editor or Admin, go to the `Role Mapping` tab, and press the `Assign Role` button. A popup is displayed with all possible client roles in the realm. Search for `essim-dashboard - Admin` or `essim-dashboard - Editor` and check the role and press `Assign` to add the Editor or Admin role to the user (select only one).
+![](Documentation/Images/keycload-essim-dashboard-assign-role-to-user.png)
 
-### Step 5. Create an API key in Grafana for the Panel Service
+### Step 4. Create an API key in Grafana for the Panel Service
 
 Log in to Grafana, go to `http://localhost:3000` and login with the credentials from the user with Admin rights you've just created.
 ![](Documentation/Images/grafana-login.png)
@@ -236,7 +206,7 @@ Fill in this API key in the file `.\ESDLMapEditor\panel-service.env` (Replace th
 GRAFANA_API_KEY=eyJrIjoiV3g0Z3pGUUxBNkhucXlySjhCRFczNXZwVXhiREhrRXciLCJuIjoicGFuZWwtc2VydmljZSIsImlkIjoxfQ==
 ```
 
-### Step 6. Start the MapEditor and ESSIM
+### Step 5. Start the MapEditor and ESSIM
 
 In another terminal window, start ESSIM:
 
@@ -259,7 +229,7 @@ cd ESDLDrive
 docker-compose up
 ```
 
-### Step 7. Log in to the ESDL MapEditor
+### Step 6. Log in to the ESDL MapEditor
 
 Using your webbrowser go to `http://localhost:8111`
 ![](Documentation/Images/mapeditor-portal.png)
@@ -269,8 +239,9 @@ Press `Start` and log in using the credentials created in the previous step
 
 You should see the following screen now:
 ![](Documentation/Images/mapeditor-main-page.png)
+The ESDL Mapeditor is ready to be used!
 
-### Step 8. Upload some profiles
+### Step 7. Upload some profiles
 
 If you're installing this toolsuite to run ESSIM simulations or any other application that requires timeseries data, you need to upload some profiles. For that purpose we've created a profile manager. In the repository there is an example dataset with profiles created from publically available data (NEDU profiles for electricity and gas usage and KNMI solar profile).
 
@@ -294,6 +265,8 @@ Please go [here](https://github.com/ESDLMapEditorESSIM/essim-tutorials) to find 
 
 ## Cloud deployment
 
+
+
 In order to run this software stack in a hosted environment, several services must be offered to the end-user:
 
 - The MapEditor frontend: the main entry point for this software stack for end uses
@@ -310,11 +283,14 @@ In our own hosted environment we use [traefik](https://containo.us/traefik/) as 
 - to terminate SSL traffic
 - as a reverse proxy: to route HTTP traffic to the right container
 
+
 Furthermore we use:
 
 - [docker swarm](https://docs.docker.com/engine/swarm/): to create a cluster of several virtual machines
 - [portainer](https://www.portainer.io/): for container management
 - [docker registry](https://docs.docker.com/registry/deploying/): to locally push container images and make deployment in the swarm easier
+
+> Recently we have also successful setups in Kubernetes. Reach out for more details.
 
 The four (or five) services listed in the beginning of this chapter must be accessible via seperate domain names (using a local or global DNS server) or seperate IP addresses. As the essim dashboard and the panel service both use grafana as their frontend, they could be treated as the same service if that's desirable. We tried running the services using sub-paths (e.g. https://mycompany.com/mapeditor and https://mycompany.com/essim-dashboard) but we were not very successful to get everything up and running.
 
@@ -329,10 +305,22 @@ Required changes:
   - Find `GF_AUTH_GENERIC_OAUTH_AUTH_URL`: change `localhost` to the domain name for keycloak
 - In `BaseInfrastructure\keycloak\esdl-mapeditor-realm.json` (or login to keycloak and change using their web-based management interface)
   - Replace all occurences of `localhost:port` to the respective domain names
+- In `ESDLMapEditor\docker-compose.yml`
+  - Find `EXTERNAL_GRAFANA_URL`: change `localhost` to the domain name for ESDL Mapeditor
 - In `ESDLMapeditor\mapeditor_open_source.env`:
   - Find `PANEL_SERVICE_EXTERNAL_URL`: replace `localhost` with the domain name of the panel service
 - (To be improved) Inside the MapEditor container, find the file `credentials\client_secrets_opensource.json`
   - Replace all occurences of `localhost` to the respective domain names (one for the mapeditor and 3 for keycloak)
+  - or mount a different version in ./ESDLMapeditor/docker-compose.yml
+  ```yaml
+    volumes:
+      - "./esdl-mapeditor/client_secrets_opensource.json:/usr/src/app/credentials/client_secrets_opensource.json"
+  ```
+- In `BaseInfrastructure\keycloak\esdl-mapeditor-realm.json` (or login to keycloak and change using their web-based management interface)
+  - Replace all occurences of `localhost:port` to the respective domain names
+- Keycloak is configured to start in `dev`-mode (`start-dev`), allowing it to be used without SSL certificates (meaning that all traffic is insecure). 
+  Configure Keycloak to start in 'normal' mode, see the `./BaseInfrastructure/docker-compose.yml` for some hints on setting this up correctly in combination with a reverse proxy that terminates SSL traffic.
+
 
 ## Details
 
@@ -384,18 +372,14 @@ The file `.\BaseInfrastructure\postgres\init-databases.sh` contains the initiali
 ESDL Drive exists of 3 components: ESDL Drive (API), CDO-Server (ESDL -> Relational database mapper) and Postgres (Database).
 ESDL Drive uses the Postgres database for storage of ESDL files. CDO-Server must be configured with the correct credentials to connect to Postgres database from the base infrastructure. This can be done in the `docker-compose.yml` of ESDLDrive. The database and 'drive' account are created in the `init-databases.sh` script
 
-ESDL Drive (API) is secured by KeyCloak and needs some configuration, among others the URL of the ESDL-Mapeditor realm (both internal as external accessible by the browser). This is configuration is defined in `ESDLDrive/docker-compose.yml`. Environment variables defined in the YML file are used in `server.xml` which configures the Open Liberty server that is packaged in the container in `/servers/hub`.
-
-ESDL Drive also needs the public key of the ESDL-Mapeditor realm, to verify the JWT tokens from Keycloak. For this setup the public key is already added in the `public.p12` keystore, but if it is changed, edit the file in `/server/hub/resources/security/public.p12` with the Java `keytool`.
+ESDL Drive (API) is secured by KeyCloak and needs some configuration, among others the URL of the ESDL-Mapeditor realm (both internal as external accessible by the browser). This is configuration is defined in `ESDLDrive/docker-compose.yml`. Environment variables defined in the YAML file are used in `server.xml` which configures the Open Liberty server that is packaged in the container in `/servers/esdl-drive-server`.
 
 
 =======
 ##### Data migration
-As ESDL is being updated frequently to support more use cases, the database schema of the ESDL Drive needs to be updated accordingly. 
-This is currently a manual process. See the [Data migration explanation](./Documentation/DataMigration/README.md) for more information.
+As ESDL is being updated frequently to support more use cases, the database schema of the ESDL Drive needs to be updated accordingly. If you set `AUTO_UPDATE=1` in the environmental variables of cdo-server, it will try to auto-update the schema, but no guarantees are given. Please backup your postgres database before migration, or use the esdl-drive tool to extract all ESDL-files from the drive before upgrading, to make sure you have a good backup.
+See the [Data migration explanation](./Documentation/DataMigration/README.md) for more information.
 
-
-Users/Password/Database
 
 ## License
 

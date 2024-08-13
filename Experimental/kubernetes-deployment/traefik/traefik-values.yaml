@@ -1,0 +1,31 @@
+additionalArguments:
+  - --certificatesresolvers.myresolver.acme.tlschallenge=true
+  - --certificatesresolvers.myresolver.acme.email=
+  - --certificatesresolvers.myresolver.acme.storage=/data/acme-myresolver.json
+  # - --certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory # STAGING LETSENCRYPT ENVIRONMENT FOR TESTING AND AVOIDING RATELIMITS
+
+ports:
+# Configure your entrypoints here...
+  web:
+    # (optional) Permanent Redirect to HTTPS
+    redirectTo: websecure
+  websecure:
+    tls:
+      enabled: true
+      # (optional) Set a Default CertResolver
+      certResolver: myresolver
+
+ingressRoute:
+  dashboard:
+    enabled: false
+
+persistence:
+  enabled: false
+
+service:
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-ipv4: x.x.x.x
+
+ingressClass:
+  enabled: true
+  isDefaultClass: true

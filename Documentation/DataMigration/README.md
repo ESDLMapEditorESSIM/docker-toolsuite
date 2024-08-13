@@ -48,14 +48,19 @@ ESDL is specified in the esdl.ecore file. When a new version is created, the fol
 ESDL drive uses CDO as ORM mapping tool (plus a lot of other features CDO offers). Unfortunately, migrating the database schema is not implemented. Several research project have done some activities in this area (part of EU FP7 Paasage project),
 but is not ready for production. Therefore we've created a migrate tool to update the repository.
 There are two ways:
-1. Dump all the ESDL-files from the ESDL drive, update the ESDl drive to the latest version, clean the database, and upload all dumped files back to the drive. This is the easiest (and recommended) method, but all history is deleted. 
-   Also, if ESDL has changed such that old ESDL files are not compatible with the newest version, you need to manually update these ESDL-files. (There are some ideas to automate this process, but this is not implemented yet.)
+1. Automatic upgrade the schema. (recommended)
    
-   This process is supported by the `esdl-drive` command-line tool, that allows you to dump all the ESDL-files from the repo on the local disk, using the `-X /` option. When logging in, use an account with esdl-drive-admin
-   privileges, to be able to access all the files in the repo.
+   We've developed an automatic database schema update feature. This can be enabled by setting `AUTO_UPDATE=1` on the cdo-server environmental variables. This will perform an automatic update of the ESDL version supported by the ESDL Drive. As this automatic update of the schema is not perfect yet, the database might become corrupt, so make sure you have a backup of the postgres database just in case.
+
+2. Dump all the ESDL-files from the ESDL drive, update the ESDL drive to the latest version, clean the database, and upload all dumped files back to the drive. This is the most straight forward method, but all history is deleted. 
+   Also, if ESDL has changed such that old ESDL files are not compatible with the newest version, you need to manually update these ESDL-files. (There are some ideas to automate this process, but this is not implemented.)
+   
+   This process is supported by the `esdl-drive` command-line tool, that allows you to dump all the ESDL-files from the repo on the local disk, using the `-X /` option. When logging in, use an account with esdl-drive-admin role
+   privileges (configure this in Keycloak), to be able to access all the files from all users in the repo (not needed if you are the only account).
    
    The `esdl-drive` command line tool can be found in the esdl-drive-tools repository.
-2. Run the steps below to update the database schema manually.
+   
+3. (old manual method, kept for refernce only) Run the steps below to update the database schema manually.
 
 
 

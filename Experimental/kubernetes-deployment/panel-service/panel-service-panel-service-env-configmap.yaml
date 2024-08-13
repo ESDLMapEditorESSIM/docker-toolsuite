@@ -1,0 +1,9 @@
+apiVersion: v1
+data:
+  GRAFANA_API_KEY: 
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: panel-service-panel-service-env
+  name: panel-service-panel-service-env
