@@ -204,6 +204,8 @@ Fill in this API key in the file `.\ESDLMapEditor\panel-service.env` (Replace th
 GRAFANA_API_KEY=eyJrIjoiV3g0Z3pGUUxBNkhucXlySjhCRFczNXZwVXhiREhrRXciLCJuIjoicGFuZWwtc2VydmljZSIsImlkIjoxfQ==
 ```
 
+Also have a look at the file `./ESDLMapEditor\boundary-service.env` and fill in the password from the `./BaseInfrastructure/.env` file or do a `source .\BaseInfrastructure\.env` to configure the database password for the boundary service.
+
 ### Step 5. Start the MapEditor and ESSIM
 
 In another terminal window, start ESSIM:
@@ -212,6 +214,7 @@ In another terminal window, start ESSIM:
 cd ESSIM
 docker-compose up
 ```
+
 
 In yet another terminal window, start the ESDL MapEditor and accompanying services:
 
