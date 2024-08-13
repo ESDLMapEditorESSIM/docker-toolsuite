@@ -1,4 +1,4 @@
-version: "3.5"
+version: "3.8"
 
 networks:
   mapeditor-net:
@@ -9,7 +9,8 @@ services:
   mapeditor:
     container_name: esdl-mapeditor
     image: esdlmapeditoressim/esdl-mapeditor:latest
-    # image: esdl-mapeditor:latest
+    volumes:
+      - "./esdl_mapeditor/client_secrets_opensource.json:/usr/src/app/credentials/client_secrets_opensource.json"
     networks:
       - mapeditor-net
     ports:
@@ -20,11 +21,12 @@ services:
   boundary-service:
     container_name: boundary-service
     image: esdlmapeditoressim/boundary-service:latest
-    # image: boundary-service:latest
     networks:
       - mapeditor-net
     ports:
       - "${BOUNDARYSERVICE_PORT:-4002}:4002"
+    env_file:
+      - boundary_service.env
 
   panel-service:
     container_name: panel-service

@@ -1,3 +1,4 @@
 ESDLMapEditor/panel_service.env
 credentials
 .env
+GeoLite2-Country.mmdb

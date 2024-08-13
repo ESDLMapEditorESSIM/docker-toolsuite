@@ -91,7 +91,7 @@ services:
   postgres:
     container_name: postgres
     image: postgis/postgis:12-master
-    #restart: always
+    restart: unless-stopped
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
@@ -100,8 +100,11 @@ services:
       - ../Data/Boundaries:/data/boundaries
     environment:
       - POSTGRES_DB=${POSTGRES_DB:-postgres}
-      - POSTGRES_USER=${POSTGRES_DB_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWD:-password}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
+      - POSTGRES_KEYCLOAK_PASSWORD=${POSTGRES_KEYCLOAK_PASSWORD}
+      - POSTGRES_BOUNDARY_SERVICE_PASSWORD=${POSTGRES_BOUNDARY_SERVICE_PASSWORD}
+      - POSTGRES_DRIVE_PASSWORD=${POSTGRES_DRIVE_PASSWORD}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
       interval: 15s # Set to 15 seconds to prevent a "Connection refused" error from boundary-service trying to connect to postgres. If you receive this error from boundary-service you can try raising this value.
@@ -125,8 +128,8 @@ services:
 
   keycloak:
     container_name: keycloak
-    image: quay.io/keycloak/keycloak:25.0 
-    #restart: always
+    image: quay.io/keycloak/keycloak:25.0
+    restart: unless-stopped
     environment:
       - KC_DB=postgres
         #- KC_DB_URL="jdbc:postgresql://postgres:${POSTGRES_PORT:-5432}/keycloak"
@@ -150,7 +153,7 @@ services:
       - --hostname=localhost  # required for production servers
       - --hostname-debug=true
         #- --hostname-url=http://localhost:8080/
-        #- --features="scripts" # for importing realms with js insite them
+        #- --features="scripts" # for importing realms with js inside them
         #- --proxy=edge  # for external TLS termination by e.g. nginx
       - --import-realm  # import realm
     ports:

@@ -2,8 +2,6 @@
 
 This project contains all information necesarry to run the ESDL MapEditor and ESSIM toolsuite on your local machine or cloud infrastructure.
 
-This page contains the required steps to install the ESDL toolsuite on your local machine using Docker. Reach out if you want to deploy the toolsuite on a Kubernetes infrastructure.
-
 ## Contents
 
 - [ESDL MapEditor and ESSIM](#esdl-mapeditor-and-essim)
@@ -17,14 +15,13 @@ This page contains the required steps to install the ESDL toolsuite on your loca
   - [Setting up and running the software stack](#setting-up-and-running-the-software-stack)
     - [Prerequisites](#prerequisites)
 	- [Steps to follow](#steps-to-follow)
-    - [Step 1. Starting the software for the base infrastructure](#step-1-starting-the-software-for-the-base-infrastructure)
-    - [Step 2. Import the keycloak settings for the MapEditor](#step-2-import-the-keycloak-settings-for-the-mapeditor)
-    - [Step 3. Creating user accounts](#step-3-creating-user-accounts)
-    - [Step 4. Configure role based access control for ESSIM dashboard](#step-4-configure-role-based-access-control-for-essim-dashboard)
-    - [Step 5. Create an API key in Grafana for the Panel Service](#step-5-create-an-api-key-in-grafana-for-the-panel-service)
-    - [Step 6. Start the MapEditor and ESSIM](#step-6-start-the-mapeditor-and-essim)
-    - [Step 7. Log in to the ESDL MapEditor](#step-7-log-in-to-the-esdl-mapeditor)
-    - [Step 8. Upload some profiles](#step-8-upload-some-profiles)
+    - [Step 1. Configuring and starting the software for the base infrastructure](#step-1-configuring-and-starting-the-software-for-the-base-infrastructure)
+    - [Step 2. Creating user accounts](#step-2-creating-user-accounts)
+    - [Step 3. Configure role based access control for ESSIM dashboard](#step-3-configure-role-based-access-control-for-essim-dashboard)
+    - [Step 4. Create an API key in Grafana for the Panel Service](#step-4-create-an-api-key-in-grafana-for-the-panel-service)
+    - [Step 5. Start the MapEditor and ESSIM](#step-5-start-the-mapeditor-and-essim)
+    - [Step 6. Log in to the ESDL MapEditor](#step-6-log-in-to-the-esdl-mapeditor)
+    - [Step 7. Upload some profiles](#step-7-upload-some-profiles)  
   - [ESDL MapEditor and ESSIM Tutorials](#esdl-mapeditor-and-essim-tutorials)
   - [Cloud deployment](#cloud-deployment)
   - [Details](#details)
@@ -103,17 +100,16 @@ Although the software was designed to run in a hosted environment somewhere in t
 
 ### Prerequisites
 
-The current stack uses docker and docker-compose. The minimum versions required are currently:
+The current stack uses docker and docker compose. The tested versions are currently:
 
-| Software       | Version  |
-| ---------------|----------|
-| Docker engine  | 19.03.12 |
-| docker-compose |   1.26.2 |
+| Software       | Version |
+| ---------------|---------|
+| Docker engine  |  26.1.3 |
+| Docker Compose |   2.6.1 |
 
 ### Steps to follow
 
 - [Step 1. Configuring and starting the software for the base infrastructure](#step-1-configuring-and-starting-the-software-for-the-base-infrastructure)
-
 - [Step 2. Creating user accounts](#step-2-creating-user-accounts)
 - [Step 3. Configure role based access control for ESSIM dashboard](#step-3-configure-role-based-access-control-for-essim-dashboard)
 - [Step 4. Create an API key in Grafana for the Panel Service](#step-4-create-an-api-key-in-grafana-for-the-panel-service)
@@ -297,11 +293,20 @@ Required changes:
   - Find `GF_AUTH_GENERIC_OAUTH_AUTH_URL`: change `localhost` to the domain name for keycloak
 - In `BaseInfrastructure\keycloak\esdl-mapeditor-realm.json` (or login to keycloak and change using their web-based management interface)
   - Replace all occurences of `localhost:port` to the respective domain names
+- In `ESDLMapEditor\docker-compose.yml`
+  - Find `EXTERNAL_GRAFANA_URL`: change `localhost` to the domain name for ESDL Mapeditor
 - In `ESDLMapeditor\mapeditor_open_source.env`:
   - Find `PANEL_SERVICE_EXTERNAL_URL`: replace `localhost` with the domain name of the panel service
 - (To be improved) Inside the MapEditor container, find the file `credentials\client_secrets_opensource.json`
   - Replace all occurences of `localhost` to the respective domain names (one for the mapeditor and 3 for keycloak)
-- Keycloak is configured to start in dev-mode, allowing it to be used without SSL certificates (meaning that all traffic is insecure). 
+  - or mount a different version in ./ESDLMapeditor/docker-compose.yml
+  ```yaml
+    volumes:
+      - "./esdl-mapeditor/client_secrets_opensource.json:/usr/src/app/credentials/client_secrets_opensource.json"
+  ```
+- In `BaseInfrastructure\keycloak\esdl-mapeditor-realm.json` (or login to keycloak and change using their web-based management interface)
+  - Replace all occurences of `localhost:port` to the respective domain names
+- Keycloak is configured to start in `dev`-mode (`start-dev`), allowing it to be used without SSL certificates (meaning that all traffic is insecure). 
   Configure Keycloak to start in 'normal' mode, see the `./BaseInfrastructure/docker-compose.yml` for some hints on setting this up correctly in combination with a reverse proxy that terminates SSL traffic.
 
 
