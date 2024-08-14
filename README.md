@@ -255,7 +255,7 @@ Click `View` and select `Settings` from the menu. The application settings dialo
 - Project profiles for ...: to upload profiles related to a project, so that all project members can use these profiles
 ![](Documentation/Images/settings-upload-profiles.png)
 
-Drag the file `.\Data\Profiles\standard_profiles.csv` and drop it in the area indicated in the dialog. Depending on your local machine's regional settings (Use '.' or ',' as the decimal seperator) you might need to choose the other csv file in the same directory.
+Drag the file `.\Data\Profiles\standard_profiles.csv` and drop it in the area indicated in the dialog, or click the button to select a file. Depending on your local machine's regional settings (Use '.' or ',' as the decimal seperator) you might need to choose the other csv file in the same directory.
 ![](Documentation/Images/settings-upload-profiles-done.png)
 
 After the uploading is finished, click `Profiles plugin` in the menu on the left. On the right side a window appears where you can view and edit the settings of the profiles you've just uploaded.
@@ -263,9 +263,22 @@ After the uploading is finished, click `Profiles plugin` in the menu on the left
 
 The profiles can now be used in the simulations.
 
+## Shutting down and resetting
+In order to stop the running services, press, in the reverse order, Ctrl-C in the terminal windows. If you started `docker compose up` with the `-d` flag, you can do a
+```sh
+docker compose down
+```
+in each of the folders.
+
+
+A `docker compose down -v` in the `BaseInfrastructure` folder will also remove the data volumes created (e.g. the data stored in Postgres, Mongo and InfluxDB). This resets and removes all data in case you got stuck somewhere.
+
+
+
 ## ESDL MapEditor and ESSIM Tutorials
 
 Please go [here](https://github.com/ESDLMapEditorESSIM/essim-tutorials) to find five different tutorials that explain how to work with the ESDL MapEditor and ESSIM
+
 
 ## Cloud deployment
 
