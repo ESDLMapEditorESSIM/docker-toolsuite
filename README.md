@@ -198,13 +198,13 @@ Fill in the details for the API key. Choose a name (e.g. 'panel-service') and ma
 Copy the generated API key.
 ![](Documentation/Images/grafana-api-key-copy.png)
 
-Fill in this API key in the file `.\ESDLMapEditor\panel-service.env` (Replace the key that is already there).
+Fill in this API key in the file `./ESDLMapEditor/panel-service.env` (Replace the key that is already there).
 
 ```sh
 GRAFANA_API_KEY=eyJrIjoiV3g0Z3pGUUxBNkhucXlySjhCRFczNXZwVXhiREhrRXciLCJuIjoicGFuZWwtc2VydmljZSIsImlkIjoxfQ==
 ```
 
-Also have a look at the file `./ESDLMapEditor\boundary-service.env` and fill in the password from the `./BaseInfrastructure/.env` file or do a `source .\BaseInfrastructure\.env` to configure the database password for the boundary service.
+Also have a look at the file `./ESDLMapEditor/boundary-service.env` and fill in the password from the `./BaseInfrastructure/.env` file or do a `source ./BaseInfrastructure/.env` to configure the database password for the boundary service.
 
 ### Step 5. Start the MapEditor and ESSIM
 
@@ -255,7 +255,7 @@ Click `View` and select `Settings` from the menu. The application settings dialo
 - Project profiles for ...: to upload profiles related to a project, so that all project members can use these profiles
 ![](Documentation/Images/settings-upload-profiles.png)
 
-Drag the file `.\Data\Profiles\standard_profiles.csv` and drop it in the area indicated in the dialog, or click the button to select a file. Depending on your local machine's regional settings (Use '.' or ',' as the decimal seperator) you might need to choose the other csv file in the same directory.
+Drag the file `./Data/Profiles/standard_profiles.csv` and drop it in the area indicated in the dialog, or click the button to select a file. Depending on your local machine's regional settings (Use '.' or ',' as the decimal seperator) you might need to choose the other csv file in the same directory.
 ![](Documentation/Images/settings-upload-profiles-done.png)
 
 After the uploading is finished, click `Profiles plugin` in the menu on the left. On the right side a window appears where you can view and edit the settings of the profiles you've just uploaded.
@@ -316,24 +316,24 @@ The following picture shows how a deployment with a reverse proxy
 
 Required changes:
 
-- In `BaseInfrastructure\docker-compose.yml`
+- In `BaseInfrastructure/docker-compose.yml`
   - Find `GF_SERVER_ROOT_URL`: change `localhost` to the domain name for the ESSIM dashboard
   - Find `GF_AUTH_SIGNOUT_REDIRECT_URL`: change two (!) occurences of `localhost` to the domain name for keycloak
   - Find `GF_AUTH_GENERIC_OAUTH_AUTH_URL`: change `localhost` to the domain name for keycloak
-- In `BaseInfrastructure\keycloak\esdl-mapeditor-realm.json` (or login to keycloak and change using their web-based management interface)
+- In `BaseInfrastructure/keycloak/esdl-mapeditor-realm.json` (or login to keycloak and change using their web-based management interface)
   - Replace all occurences of `localhost:port` to the respective domain names
-- In `ESDLMapEditor\docker-compose.yml`
+- In `ESDLMapEditor/docker-compose.yml`
   - Find `EXTERNAL_GRAFANA_URL`: change `localhost` to the domain name for ESDL Mapeditor
-- In `ESDLMapeditor\mapeditor_open_source.env`:
+- In `ESDLMapeditor/mapeditor_open_source.env`:
   - Find `PANEL_SERVICE_EXTERNAL_URL`: replace `localhost` with the domain name of the panel service
-- (To be improved) Inside the MapEditor container, find the file `credentials\client_secrets_opensource.json`
-  - Replace all occurences of `localhost` to the respective domain names (one for the mapeditor and 3 for keycloak)
+- Find the file `./ESDLMapEditor/esdl_mapeditor/client_secrets_opensource.json. This file is mounted inside the container when started and contains the keycloak configuration.`
+  - Replace all occurences of `localhost` to the respective domain names (one for the mapeditor and 2 for keycloak)
   - or mount a different version in ./ESDLMapeditor/docker-compose.yml
   ```yaml
     volumes:
       - "./esdl-mapeditor/client_secrets_opensource.json:/usr/src/app/credentials/client_secrets_opensource.json"
   ```
-- In `BaseInfrastructure\keycloak\esdl-mapeditor-realm.json` (or login to keycloak and change using their web-based management interface)
+- In `BaseInfrastructure/keycloak/esdl-mapeditor-realm.json` (or login to keycloak and change using their web-based management interface)
   - Replace all occurences of `localhost:port` to the respective domain names
 - Keycloak is configured to start in `dev`-mode (`start-dev`), allowing it to be used without SSL certificates (meaning that all traffic is insecure). 
   Configure Keycloak to start in 'normal' mode, see the `./BaseInfrastructure/docker-compose.yml` for some hints on setting this up correctly in combination with a reverse proxy that terminates SSL traffic.
@@ -382,7 +382,7 @@ Required changes:
 
 #### PostgresDB
 
-The file `.\BaseInfrastructure\postgres\init-databases.sh` contains the initialization script for the postgres database.
+The file `./BaseInfrastructure/postgres/init-databases.sh` contains the initialization script for the postgres database.
 
 #### ESDL Drive
 
