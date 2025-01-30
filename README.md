@@ -204,7 +204,7 @@ Fill in this API key in the file `./ESDLMapEditor/panel_service.env` (Replace th
 GRAFANA_API_KEY=eyJrIjoiV3g0Z3pGUUxBNkhucXlySjhCRFczNXZwVXhiREhrRXciLCJuIjoicGFuZWwtc2VydmljZSIsImlkIjoxfQ==
 ```
 
-Also have a look at the file `./ESDLMapEditor/boundary-service.env` and fill in the password from the `./BaseInfrastructure/.env` file or do a `source ./BaseInfrastructure/.env` to configure the database password for the boundary service.
+Also have a look at the file `./ESDLMapEditor/boundary_service.env` and fill in the password from the `./BaseInfrastructure/.env` file or do a `source ./BaseInfrastructure/.env` to configure the database password for the boundary service.
 
 ### Step 5. Start the MapEditor and ESSIM
 
