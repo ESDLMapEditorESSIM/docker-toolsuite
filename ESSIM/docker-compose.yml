@@ -3,6 +3,7 @@ version: '3'
 networks:
   mapeditor-net:
     name: mapeditor-net
+    external: true
 
 services:
   essim-engine:

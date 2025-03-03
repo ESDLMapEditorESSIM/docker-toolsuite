@@ -3,6 +3,7 @@ version: '3.5'
 networks:
   mapeditor-net:
     name: mapeditor-net
+    external: true
 
 services:
   cdo-server:
