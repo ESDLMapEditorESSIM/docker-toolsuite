@@ -75,7 +75,7 @@ services:
       - INTERNAL_GRAFANA_PORT=3000
       - GRAFANA_USER=admin
       - GRAFANA_PASSWORD=admin
-    command: bash -c '[ -f /app/setup_grafana.py ] && python /app/setup_grafana.py || { echo "setup_grafana.py not found, skipping initialization"; exit 0; }'
+    command: bash -c '[ -f setup_grafana.py ] && python setup_grafana.py || { echo "setup_grafana.py not found, skipping initialization"; exit 0; }'
     depends_on:
       grafana:
         condition: service_healthy
