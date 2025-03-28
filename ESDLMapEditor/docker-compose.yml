@@ -33,7 +33,7 @@ services:
     image: esdlmapeditoressim/panel-service:latest
     # image: panel-service:latest
     ports:
-      - 3400:5000
+      - "${PANELSERVICE_PORT:-3400}:4002"
     networks:
       - mapeditor-net
     environment:

@@ -1,12 +1,5 @@
-version: "3.8"
-
-# WARMING: this single file stack deployment is not working yet nor is adapted to the .env file in BaseInfrastructure.
-# This is still work in progress and uses the wrong keycloak
-
 volumes:
-  # For backwards compatibility, use the "old" names.
-  # You might get a warning that these are external volumes. This can be ignored. In case this gives an error in a
-  # future version, add "external: true" to each volume.
+  # These names are used for backwards compatibility.
   mongo_storage:
     name: "baseinfrastructure_mongo_storage"
     driver: local
@@ -29,10 +22,16 @@ networks:
     name: mapeditor-net
 
 services:
+  #___  ___  ___  ______ ___________ _____ _____ ___________
+  #|  \/  | / _ \ | ___ \  ___|  _  \_   _|_   _|  _  | ___ \
+  #| .  . |/ /_\ \| |_/ / |__ | | | | | |   | | | | | | |_/ /
+  #| |\/| ||  _  ||  __/|  __|| | | | | |   | | | | | |    /
+  #| |  | || | | || |   | |___| |/ / _| |_  | | \ \_/ / |\ \
+  #\_|  |_/\_| |_/\_|   \____/|___/  \___/  \_/  \___/\_| \_|
+
   mapeditor:
+    container_name: esdl-toolsuite_mapeditor
     image: esdlmapeditoressim/esdl-mapeditor:latest
-    # image: esdl-mapeditor:latest
-    profiles: ["mapeditor"]
     networks:
       - mapeditor-net
     ports:
@@ -45,7 +44,15 @@ services:
       mongo:
         condition: service_healthy
 
+  # _____ ___________ _       _____ ___________ _   _ _____ _____  _____ _____
+  #|  ___/  ___|  _  \ |     /  ___|  ___| ___ \ | | |_   _/  __ \|  ___/  ___|
+  #| |__ \ `--.| | | | |     \ `--.| |__ | |_/ / | | | | | | /  \/| |__ \ `--.
+  #|  __| `--. \ | | | |      `--. \  __||    /| | | | | | | |    |  __| `--. \
+  #| |___/\__/ / |/ /| |____ /\__/ / |___| |\ \\ \_/ /_| |_| \__/\| |___/\__/ /
+  #\____/\____/|___/ \_____/ \____/\____/\_| \_|\___/ \___/ \____/\____/\____/
+
   boundary-service:
+    container_name: esdl-toolsuite_boundary-service
     image: esdlmapeditoressim/boundary-service:latest
     networks:
       - mapeditor-net
@@ -54,11 +61,32 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    env_file:
+      - ESDLMapEditor/boundary_service.env
+
+  panel-service-init:
+    container_name: esdl-toolsuite_panel-service-init
+    image: esdlmapeditoressim/panel-service:latest
+    volumes:
+      - ./ESDLMapEditor:/app
+    environment:
+      - ENV_FILE_PATH=/app/panel_service.env
+      - INTERNAL_GRAFANA_HOST=grafana
+      - INTERNAL_GRAFANA_PORT=3000
+      - GRAFANA_USER=admin
+      - GRAFANA_PASSWORD=admin
+    command: bash -c '[ -f /app/setup_grafana.py ] && python /app/setup_grafana.py || { echo "setup_grafana.py not found, skipping initialization"; exit 0; }'
+    depends_on:
+      grafana:
+        condition: service_healthy
+    networks:
+      - mapeditor-net
 
   panel-service:
+    container_name: esdl-toolsuite_panel-service
     image: esdlmapeditoressim/panel-service:latest
     ports:
-      - 3400:5000
+      - "${PANELSERVICE_PORT:-3400}:4002"
     networks:
       - mapeditor-net
     environment:
@@ -68,8 +96,99 @@ services:
       - EXTERNAL_GRAFANA_URL=http://localhost:3000
     env_file:
       - ESDLMapEditor/panel_service.env
+    depends_on:
+      panel-service-init:
+        condition: service_completed_successfully
+
+  # _____ ___________ _      ____________ _____ _   _ _____
+  #|  ___/  ___|  _  \ |     |  _  \ ___ \_   _| | | |  ___|
+  #| |__ \ `--.| | | | |     | | | | |_/ / | | | | | | |__
+  #|  __| `--. \ | | | |     | | | |    /  | | | | | |  __|
+  #| |___/\__/ / |/ /| |____ | |/ /| |\ \ _| |_\ \_/ / |___
+  #\____/\____/|___/ \_____/ |___/ \_| \_|\___/ \___/\____/
+
+  cdo-server:
+    container_name: esdl-toolsuite_cdo-server
+    image: esdlmapeditoressim/cdo-server:latest
+    ports:
+      - "2036:2036"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - POSTGRESQL_HOST=postgres
+      - POSTGRESQL_PORT=5432
+      - POSTGRESQL_USER=drive
+      - POSTGRESQL_PASSWORD=password
+      - POSTGRESQL_DATABASE=esdlrepo
+      #- AUTO_MIGRATE=1
+    networks:
+      - mapeditor-net
+
+  esdl-drive:
+    container_name: mapeditor-toolsuite_esdl-drive
+    image: esdlmapeditoressim/esdl-drive:latest
+    ports:
+      - 9080:9080
+      - 9443:9443
+    depends_on:
+      - cdo-server
+    links:
+      - cdo-server
+    environment:
+      - CDO_SERVER_HOST=cdo-server:2036
+      - KEYCLOAK_REALM=http://keycloak:8080/auth/realms/esdl-mapeditor
+      - KEYCLOAK_REALM_EXTERNAL=http://localhost:8080/auth/realms/esdl-mapeditor
+    networks:
+      - mapeditor-net
+
+  # _____ _____ _____ ________  ___
+  #|  ___/  ___/  ___|_   _|  \/  |
+  #| |__ \ `--.\ `--.  | | | .  . |
+  #|  __| `--. \`--. \ | | | |\/| |
+  #| |___/\__/ /\__/ /_| |_| |  | |
+  #\____/\____/\____/ \___/\_|  |_/
+
+  essim-engine:
+    container_name: esdl-toolsuite_essim-engine
+    image: esdlmapeditoressim/essim:35f7318
+    ports:
+      - 8112:8112
+    environment:
+      - HTTP_SERVER_SCHEME=http
+      - HTTP_SERVER_HOSTNAME=0.0.0.0
+      - HTTP_SERVER_PORT=8112
+      - HTTP_SERVER_PATH=essim
+      - MONGODB_HOST=mongo
+      - MONGODB_PORT=27017
+      - GRAFANA_ADMIN_USER=admin
+      - GRAFANA_ADMIN_PASSWORD=admin
+      - GRAFANA_INTERNAL_URL=http://grafana:3000
+      - GRAFANA_EXTERNAL_URL=http://localhost:3000
+    networks:
+      - mapeditor-net
+    depends_on:
+      - nats
+
+  nats:
+    container_name: esdl-toolsuite_nats
+    image: esdlmapeditoressim/nats-server:latest
+    ports:
+      - 4222:4222
+      - 8222:8222
+      - 6222:6222
+    networks:
+      - mapeditor-net
+
+  #______  ___ _____ ___  ______  ___   _____ _____ _____
+  #|  _  \/ _ \_   _/ _ \ | ___ \/ _ \ /  ___|  ___/  ___|
+  #| | | / /_\ \| |/ /_\ \| |_/ / /_\ \\ `--.| |__ \ `--.
+  #| | | |  _  || ||  _  || ___ \  _  | `--. \  __| `--. \
+  #| |/ /| | | || || | | || |_/ / | | |/\__/ / |___/\__/ /
+  #|___/ \_| |_/\_/\_| |_/\____/\_| |_/\____/\____/\____/
 
   mongo:
+    container_name: esdl-toolsuite_mongo
     image: mvertes/alpine-mongo
     volumes:
       - mongo_storage:/data/db
@@ -84,6 +203,7 @@ services:
       - mapeditor-net
 
   influxdb:
+    container_name: mapeditor-toolsuite-influxdb
     image: influxdb:1.7
     ports:
       - "${INFLUXDB_PORT:-8086}:8086"
@@ -103,7 +223,107 @@ services:
     networks:
       - mapeditor-net
 
+  postgres:
+    container_name: esdl-toolsuite_postgres
+    image: postgis/postgis:12-master
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_storage:/var/lib/postgresql/data
+      - ./BaseInfrastructure/postgres/init-database.sh:/docker-entrypoint-initdb.d/init-database.sh
+      - ./Data/Boundaries:/data/boundaries
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-postgres}
+      - POSTGRES_USER=${POSTGRES_DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWD:-password}
+      - POSTGRES_KEYCLOAK_PASSWORD=${POSTGRES_KEYCLOAK_PASSWORD:-password}
+      - POSTGRES_BOUNDARY_SERVICE_PASSWORD=${POSTGRES_BOUNDARY_SERVICE_PASSWORD:-password}
+      - POSTGRES_DRIVE_PASSWORD=${POSTGRES_DRIVE_PASSWORD:-password}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 15s # Set to 15 seconds to prevent a "Connection refused" error from boundary-service trying to connect to postgres. If you receive this error from boundary-service you can try raising this value.
+      timeout: 5s
+    networks:
+      - mapeditor-net
+
+  pgadmin:
+    container_name: esdl-toolsuite_pgadmin
+    image: dpage/pgadmin4
+    profiles: [debug]
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@admin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+    volumes:
+      - pgadmin_storage:/root/.pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    networks:
+      - mapeditor-net
+
+  # _   __ _______   _______  _     _____  ___   _   __
+  #| | / /|  ___\ \ / /  __ \| |   |  _  |/ _ \ | | / /
+  #| |/ / | |__  \ V /| /  \/| |   | | | / /_\ \| |/ /
+  #|    \ |  __|  \ / | |    | |   | | | |  _  ||    \
+  #| |\  \| |___  | | | \__/\| |___\ \_/ / | | || |\  \
+  #\_| \_/\____/  \_/  \____/\_____/\___/\_| |_/\_| \_/
+
+  keycloak:
+    container_name: esdl-toolsuite_keycloak
+    image: quay.io/keycloak/keycloak:25.0
+    restart: unless-stopped
+    environment:
+      - KC_DB=postgres
+      #- KC_DB_URL="jdbc:postgresql://postgres:${POSTGRES_PORT:-5432}/keycloak"
+      - KC_DB_URL_DATABASE=keycloak
+      - KC_DB_URL_HOST=postgres
+      - KC_DB_URL_PORT=${POSTGRES_PORT:-5432}
+      - KC_DB_SCHEMA=public
+      - KC_DB_USERNAME=keycloak
+      - KC_DB_PASSWORD=${POSTGRES_KEYCLOAK_PASSWORD:-password}
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      - PROXY_ADDRESS_FORWARDING=true
+      - KC_OVERRIDE=false
+    command:
+      - -Dkeycloak.migration.strategy=IGNORE_EXISTING
+      - start-dev  # start (production with TLS) or start-dev for development (less strict security)
+      - --health-enabled=true  # enable /health, /health/ready and /health/live endpoints
+      - --http-relative-path=/auth  # for compatiblity with keycloak <17
+      #- --hostname-path=/auth
+      - --hostname-strict=false   # for local dev testing between containern names and localhost
+      - --hostname=localhost  # required for production servers
+      - --hostname-debug=true
+      #- --hostname-url=http://localhost:8080/
+      #- --features="scripts" # for importing realms with js inside them
+      #- --proxy=edge  # for external TLS termination by e.g. nginx
+      - --import-realm  # import realm
+    ports:
+      - "${KEYCLOAK_PORT:-8080}:8080"
+      - "${KEYCLOAK_HTTPS_PORT:-8443}:8443"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "/bin/sh -c '(echo > /dev/tcp/localhost/8080) >/dev/null 2>&1 || exit 1'"]
+      interval: 15s
+      timeout: 2s
+      retries: 15
+    networks:
+      - mapeditor-net
+    volumes:
+      - "./BaseInfrastructure/keycloak/:/opt/keycloak/data/import"
+
+  # _____ _____ _   _  ___________
+  #|  _  |_   _| | | ||  ___| ___ \
+  #| | | | | | | |_| || |__ | |_/ /
+  #| | | | | | |  _  ||  __||    /
+  #\ \_/ / | | | | | || |___| |\ \
+  # \___/  \_/ \_| |_/\____/\_| \_|
+
   grafana:
+    container_name: esdl-toolsuite_grafana
     image: grafana/grafana:8.4.3
     volumes:
       - grafana_storage:/var/lib/grafana
@@ -133,129 +353,16 @@ services:
       - GF_AUTH_GENERIC_OAUTH_AUTH_URL=http://localhost:8080/auth/realms/esdl-mapeditor/protocol/openid-connect/auth
       - GF_AUTH_GENERIC_OAUTH_TOKEN_URL=http://keycloak:8080/auth/realms/esdl-mapeditor/protocol/openid-connect/token
       - GF_AUTH_GENERIC_OAUTH_API_URL=http://keycloak:8080/auth/realms/esdl-mapeditor/protocol/openid-connect/userinfo
-    networks:
-      - mapeditor-net
-
-  postgres:
-    image: postgis/postgis:12-master
-    restart: always
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
-    volumes:
-      - postgres_storage:/var/lib/postgresql/data
-      - ./BaseInfrastructure/postgres/init-database.sh:/docker-entrypoint-initdb.d/init-database.sh
-      - ./Data/Boundaries:/data/boundaries
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB:-postgres}
-      - POSTGRES_USER=${POSTGRES_DB_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWD:-password}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
-      interval: 15s # Set to 15 seconds to prevent a "Connection refused" error from boundary-service trying to connect to postgres. If you receive this error from boundary-service you can try raising this value.
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1" ]
+      interval: 10s
       timeout: 5s
+      retries: 5
     networks:
       - mapeditor-net
-
-  pgadmin:
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@admin.org}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-    volumes:
-      - pgadmin_storage:/root/.pgadmin
-    ports:
-      - "${PGADMIN_PORT:-5050}:80"
-    restart: unless-stopped
-    networks:
-      - mapeditor-net
-
-  cdo-server:
-    image: esdlmapeditoressim/cdo-server:latest
-    ports:
-      - "2036:2036"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      - POSTGRESQL_HOST=postgres
-      - POSTGRESQL_PORT=5432
-      - POSTGRESQL_USER=drive
-      - POSTGRESQL_PASSWORD=password
-      - POSTGRESQL_DATABASE=esdlrepo
-      #- AUTO_MIGRATE=1
-    networks:
-      - mapeditor-net
-
-  esdl-drive:
-    image: esdlmapeditoressim/esdl-drive:latest
-    ports:
-      - 9080:9080
-      - 9443:9443
-    depends_on:
-      - cdo-server
-    links:
-      - cdo-server
-    environment:
-      - CDO_SERVER_HOST=cdo-server:2036
-      - KEYCLOAK_REALM=http://keycloak:8080/auth/realms/esdl-mapeditor
-      - KEYCLOAK_REALM_EXTERNAL=http://localhost:8080/auth/realms/esdl-mapeditor
-    networks:
-      - mapeditor-net
-
-  essim-engine:
-    image: esdlmapeditoressim/essim:35f7318
-    ports:
-      - 8112:8112
-    environment:
-      - HTTP_SERVER_SCHEME=http
-      - HTTP_SERVER_HOSTNAME=0.0.0.0
-      - HTTP_SERVER_PORT=8112
-      - HTTP_SERVER_PATH=essim
-      - MONGODB_HOST=mongo
-      - MONGODB_PORT=27017
-      - GRAFANA_ADMIN_USER=admin
-      - GRAFANA_ADMIN_PASSWORD=admin
-      - GRAFANA_INTERNAL_URL=http://grafana:3000
-      - GRAFANA_EXTERNAL_URL=http://localhost:3000
-    networks:
-      - mapeditor-net
-    depends_on:
-      - nats
-
-  nats:
-    image: esdlmapeditoressim/nats-server:latest
-    ports:
-      - 4222:4222
-      - 8222:8222
-      - 6222:6222
-    networks:
-      - mapeditor-net
-
-  keycloak:
-    image: quay.io/keycloak/keycloak:11.0.3
-    restart: always
-    environment:
-      - DB_VENDOR=POSTGRES
-      - DB_ADDR=postgres
-      - DB_DATABASE=keycloak
-      - DB_USER=keycloak
-      - DB_SCHEMA=public
-      - DB_PASSWORD=password
-      - KEYCLOAK_USER=admin
-      - KEYCLOAK_PASSWORD=admin
-      - PROXY_ADDRESS_FORWARDING=true
-    ports:
-      - "${KEYCLOAK_PORT:-8080}:8080"
-      - "${KEYCLOAK_HTTPS_PORT:-8443}:8443"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - mapeditor-net
-    volumes:
-      - "./BaseInfrastructure/keycloak/:/tmp/config/"
 
   rabbitmq:
+    container_name: esdl-toolsuite_rabbitmq
     image: bitnami/rabbitmq:3.9
     ports:
       - 5672:5672
@@ -265,5 +372,3 @@ services:
     environment:
       - RABBITMQ_USERNAME=admin
       - RABBITMQ_PASSWORD=admin
-#    volumes:
-#      - ./rabbitmq/rabbitmq.conf:/bitnami/rabbitmq/conf/rabbitmq.conf

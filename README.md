@@ -53,7 +53,12 @@ To get an impression of what the tools can do and how they look like, have look 
 
 ## What is ESDL?
 
-ESDL is a modelling language created to describe complete (hybrid) energy systems in one uniform format. It allows to describe information about the individual energy system components, how they are connected, how they are used (e.g. using energy production or consumption profiles), where they are physically located (on the map), what they cost (now and in future). Furthermore information about buildings in an area, energy potential, KPIs (on buildings, areas, or any assets) can be described. Possible applications are facilitating interoperability between different energy transition models and publishing open data on energy systems.
+ESDL is a modelling language created to describe complete (hybrid) energy systems in one uniform format. It allows to
+describe information about the individual energy system components, how they are connected, how they are used (e.g.
+using energy production or consumption profiles), where they are physically located (on the map), what they cost (now
+and in future). Furthermore information about buildings in an area, energy potential, KPIs (on buildings, areas, or any
+assets) can be described. Possible applications are facilitating interoperability between different energy transition
+models and publishing open data on energy systems.
 
 Click [here](https://energytransition.gitbook.io/esdl/) for the ESDL documentation website
 
@@ -105,7 +110,10 @@ It consists of the following functionalities:
 
 ## Setting up and running the software stack
 
-Although the software was designed to run in a hosted environment somewhere in the cloud or in your in-company datacenter, the software can be run on a local laptop or PC as well. The following steps describe the installation process on a local machine. In [the cloud deployment chapter](#cloud-deployment) we'll give some directions for cloud deployment
+Although the software was designed to run in a hosted environment somewhere in the cloud or in your in-company
+datacenter, the software can be run on a local laptop or PC as well. The following steps describe the installation
+process on a local machine. In [the cloud deployment chapter](#cloud-deployment) we'll give some directions for cloud
+deployment
 
 ### Prerequisites
 
@@ -132,11 +140,17 @@ The current stack uses docker and docker compose. The tested versions are curren
 ---
 **NOTE FOR WINDOWS USERS:**
 
-When cloning this repository using git for windows, file line endings are automatically converted from LF (Unix style) to CRLF (Windows style). This causes problems for the file `BaseInfrastructure/postgres/init-database.sh` as it is being mounted in one of the docker containers running linux. Please make sure that this file gets Unix style line endings, by converting it back using for example notepad++ or dos2unix, or configure git in such a way that it doesn't automatically convert line endings to windows style (Search for 'git autocrlf').
+When cloning this repository using git for windows, file line endings are automatically converted from LF (Unix style)
+to CRLF (Windows style). This causes problems for the file `BaseInfrastructure/postgres/init-database.sh` as it is being
+mounted in one of the docker containers running linux. Please make sure that this file gets Unix style line endings, by
+converting it back using for example notepad++ or dos2unix, or configure git in such a way that it doesn't automatically
+convert line endings to windows style (Search for 'git autocrlf').
 
 ---
 
-To configure the base infrastructure have a look at the `.env.template` file in de `BaseInfrastructure` folder and copy it to a `.env` file and adapt to your situation (defaults should work out of the box for a localhost installation, but are not secure).
+To configure the base infrastructure have a look at the `.env.template` file in de `BaseInfrastructure` folder and copy
+it to a `.env` file and adapt to your situation (defaults should work out of the box for a localhost installation, but
+are not secure).
 
 Start the base infrastructure (databases, grafana, pgadmin, ...)
 
@@ -151,12 +165,14 @@ Wait for the base infrastructure to be ready.
 
 ### Step 2. Creating user accounts
 
-Using you webbrowser, go to `http://localhost:8080/auth` to login to keycloak (Note: don't forget the `/auth`, this is needed for newer Keycloak versions to be compatible with older versions). 
+Using you webbrowser, go to `http://localhost:8080/auth` to login to keycloak (Note: don't forget the `/auth`, this is
+needed for newer Keycloak versions to be compatible with older versions).
 
 Login with the admin credentials as specified in the docker-compose file or your adapted `.env` file.
 ![](Documentation/Images/keycloak-login-screen.png)
 
-Once you're logged in, you see a welcome for the master realm (e.g. to configure other realms, or change the admin password).
+Once you're logged in, you see a welcome for the master realm (e.g. to configure other realms, or change the admin
+password).
 ![](Documentation/Images/keycloak-loggedin-master.png)
 
 Select the `ESDL Studio (esdl-mapeditor)` realm using the drop-down on the top-left.
@@ -168,7 +184,8 @@ Click `Users` from the menu on the left
 Click `Add User` and fill in the proper user information and click `Create`. Be sure to fill in an email address!
 ![](Documentation/Images/keycloak-add-user.png)
 
-After clicking `Save` a number of tabs appear. Go to the `Credentials` tab, select `Set password` and set the password of the newly created user in the popup. 
+After clicking `Save` a number of tabs appear. Go to the `Credentials` tab, select `Set password` and set the password
+of the newly created user in the popup.
 ![](Documentation/Images/keycloak-set-password.png)
 
 Go to the `Attributes` tab and add an attribute with `role` as key and with `essim` as value, and press `Save`.
@@ -176,9 +193,14 @@ Go to the `Attributes` tab and add an attribute with `role` as key and with `ess
 
 ### Step 3. Configure role based access control for ESSIM dashboard
 
-The ESSIM dashboard is a Grafana based solution for viewing simulation results. Grafana supports multiple roles: Viewer, Editor and Admin. If you want to give some users other roles than Viewer, add the roles Editor and/or Admin to Keycloak and assign these roles to the appropriate user. When you don't do this, all users get the Viewer rights.
+The ESSIM dashboard is a Grafana based solution for viewing simulation results. Grafana supports multiple roles: Viewer,
+Editor and Admin. If you want to give some users other roles than Viewer, add the roles Editor and/or Admin to Keycloak
+and assign these roles to the appropriate user. When you don't do this, all users get the Viewer rights.
 
-Go to the user that needs to become an Editor or Admin, go to the `Role Mapping` tab, and press the `Assign Role` button. A popup is displayed with all possible client roles in the realm. Search for `essim-dashboard - Admin` or `essim-dashboard - Editor` and check the role and press `Assign` to add the Editor or Admin role to the user (select only one).
+Go to the user that needs to become an Editor or Admin, go to the `Role Mapping` tab, and press the `Assign Role`
+button. A popup is displayed with all possible client roles in the realm. Search for `essim-dashboard - Admin` or
+`essim-dashboard - Editor` and check the role and press `Assign` to add the Editor or Admin role to the user (select
+only one).
 ![](Documentation/Images/keycload-essim-dashboard-assign-role-to-user.png)
 
 ### Step 4. Create an API key in Grafana for the Panel Service
@@ -204,7 +226,9 @@ Fill in this API key in the file `./ESDLMapEditor/panel_service.env` (Replace th
 GRAFANA_API_KEY=eyJrIjoiV3g0Z3pGUUxBNkhucXlySjhCRFczNXZwVXhiREhrRXciLCJuIjoicGFuZWwtc2VydmljZSIsImlkIjoxfQ==
 ```
 
-Also have a look at the file `./ESDLMapEditor/boundary_service.env` and fill in the password from the `./BaseInfrastructure/.env` file or do a `source ./BaseInfrastructure/.env` to configure the database password for the boundary service.
+Also have a look at the file `./ESDLMapEditor/boundary_service.env` and fill in the password from the
+`./BaseInfrastructure/.env` file or do a `source ./BaseInfrastructure/.env` to configure the database password for the
+boundary service.
 
 ### Step 5. Start the MapEditor and ESSIM
 
@@ -215,7 +239,6 @@ cd ESSIM
 docker-compose up
 ```
 
-
 In yet another terminal window, start the ESDL MapEditor and accompanying services:
 
 ```sh
@@ -223,7 +246,8 @@ cd ESDLMapEditor
 docker-compose up
 ```
 
-To start ESDL Drive storage do the following in another terminal (or use -d option for each `docker-compose` command, to start in detached mode):
+To start ESDL Drive storage do the following in another terminal (or use -d option for each `docker-compose` command, to
+start in detached mode):
 
 ```sh
 cd ESDLDrive
@@ -245,7 +269,10 @@ The ESDL Mapeditor is ready to be used!
 
 ### Step 7. Upload some profiles
 
-If you're installing this toolsuite to run ESSIM simulations or any other application that requires timeseries data, you need to upload some profiles. For that purpose we've created a profile manager. In the repository there is an example dataset with profiles created from publically available data (NEDU profiles for electricity and gas usage and KNMI solar profile).
+If you're installing this toolsuite to run ESSIM simulations or any other application that requires timeseries data, you
+need to upload some profiles. For that purpose we've created a profile manager. In the repository there is an example
+dataset with profiles created from publically available data (NEDU profiles for electricity and gas usage and KNMI solar
+profile).
 
 > _NOTE:_ Recent versions of the ESDL MapEditor are integrated with the Energy Data Repository ([EDR](https://edr.hesi.energy/)) and profiles present in the EDR are now also accessible from the ESDL MapEditor!
 
@@ -264,25 +291,23 @@ After the uploading is finished, click `Profiles plugin` in the menu on the left
 The profiles can now be used in the simulations.
 
 ## Shutting down and resetting
-In order to stop the running services, press, in the reverse order, Ctrl-C in the terminal windows. If you started `docker compose up` with the `-d` flag, you can do a
+
+In order to stop the running services, press, in the reverse order, Ctrl-C in the terminal windows. If you started
+`docker compose up` with the `-d` flag, you can do a
+
 ```sh
 docker compose down
 ```
 in each of the folders.
 
-
-A `docker compose down -v` in the `BaseInfrastructure` folder will also remove the data volumes created (e.g. the data stored in Postgres, Mongo and InfluxDB). This resets and removes all data in case you got stuck somewhere.
-
-
+A `docker compose down -v` in the `BaseInfrastructure` folder will also remove the data volumes created (e.g. the data
+stored in Postgres, Mongo and InfluxDB). This resets and removes all data in case you got stuck somewhere.
 
 ## ESDL MapEditor and ESSIM Tutorials
 
-Please go [here](https://github.com/ESDLMapEditorESSIM/essim-tutorials) to find five different tutorials that explain how to work with the ESDL MapEditor and ESSIM
-
+Please go [here](https://github.com/ESDLMapEditorESSIM/essim-tutorials) to find five different tutorials that explain how to work with the ESDL MapEditor and ESSIM.
 
 ## Cloud deployment
-
-
 
 In order to run this software stack in a hosted environment, several services must be offered to the end-user:
 

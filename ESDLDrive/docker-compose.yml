@@ -11,10 +11,6 @@ services:
     container_name: cdo-server
     ports:
       - "2036:2036"
-#    depends_on: 
-#      - postgis
-#    links:
-#      - postgis
     environment:
       - POSTGRESQL_HOST=postgres
       - POSTGRESQL_PORT=5432

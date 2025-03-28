@@ -1,27 +1,75 @@
 #!/bin/bash
 set -e
 
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
-    CREATE USER keycloak WITH ENCRYPTED PASSWORD '${POSTGRES_KEYCLOAK_PASSWORD}';
-    CREATE DATABASE keycloak OWNER keycloak;
-    GRANT ALL PRIVILEGES ON DATABASE keycloak TO keycloak;
-    CREATE USER boundary_service WITH ENCRYPTED PASSWORD '${POSTGRES_BOUNDARY_SERVICE_PASSWORD}';
-    CREATE DATABASE boundaries OWNER boundary_service;
-    GRANT ALL PRIVILEGES ON DATABASE boundaries TO boundary_service;
-    CREATE USER drive WITH ENCRYPTED PASSWORD '${POSTGRES_DRIVE_PASSWORD}';
-    CREATE DATABASE esdlrepo OWNER drive;
-    GRANT ALL PRIVILEGES ON DATABASE esdlrepo TO drive;
-    ALTER USER drive CREATEDB;
+log() {
+  echo "$(date '+%Y-%m-%d %H:%M:%S') - $1"
+}
+
+create_user_and_db() {
+  local username=$1
+  local password=$2
+  local dbname=$3
+  local extra_grants=$4
+
+  log "Creating user and database for $username..."
+
+  psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+    DO \$\$
+    BEGIN
+      IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '$username') THEN
+        CREATE USER $username WITH ENCRYPTED PASSWORD '$password';
+      END IF;
+    END;
+    \$\$;
 EOSQL
 
-psql --username "$POSTGRES_USER" --dbname boundaries -c "CREATE EXTENSION postgis;"
-psql --username "$POSTGRES_USER" --dbname boundaries -c "CREATE EXTENSION postgis_topology;"
+  psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+    SELECT 'CREATE DATABASE $dbname OWNER $username'
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '$dbname')
+    \gexec
+EOSQL
 
+  psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+    GRANT ALL PRIVILEGES ON DATABASE $dbname TO $username;
+    $extra_grants
+EOSQL
+}
+
+
+import_shapefile() {
+  local shapefile=$1
+  local table_name=$2
+
+  log "Importing $shapefile into $table_name..."
+  shp2pgsql -s 4326 "/data/boundaries/$shapefile.shp" "public.$table_name" | \
+    psql --username boundary_service --dbname boundaries
+}
+
+# Main execution
+log "Starting database initialization..."
+
+# Create users and databases
+create_user_and_db "keycloak" "${POSTGRES_KEYCLOAK_PASSWORD}" "keycloak" ""
+create_user_and_db "boundary_service" "${POSTGRES_BOUNDARY_SERVICE_PASSWORD}" "boundaries" ""
+create_user_and_db "drive" "${POSTGRES_DRIVE_PASSWORD}" "esdlrepo" "ALTER USER drive CREATEDB;"
+create_user_and_db "mapeditor" "${POSTGRES_MAPEDITOR_PASSWORD}" "mapeditor" ""
+
+# Setup PostGIS
+log "Setting up PostGIS extensions on boundaries database..."
+psql --username "$POSTGRES_USER" --dbname boundaries -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+psql --username "$POSTGRES_USER" --dbname boundaries -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;"
+
+# Import SQL data
+log "Importing SQL data into boundaries database..."
 psql --username "$POSTGRES_USER" --dbname boundaries -f /data/boundaries/bu_wk_gm_es_pv_la.sql
 
-shp2pgsql -s 4326 /data/boundaries/buurt_2019_wgs.shp public.buurt_2019_wgs | psql --username boundary_service --dbname boundaries
-shp2pgsql -s 4326 /data/boundaries/wijk_2019_wgs.shp public.wijk_2019_wgs | psql --username boundary_service --dbname boundaries
-shp2pgsql -s 4326 /data/boundaries/gem_2019_wgs.shp public.gem_2019_wgs | psql --username boundary_service --dbname boundaries
-shp2pgsql -s 4326 /data/boundaries/res_2019_wgs.shp public.res_2019_wgs | psql --username boundary_service --dbname boundaries
-shp2pgsql -s 4326 /data/boundaries/prov_2019_wgs.shp public.prov_2019_wgs | psql --username boundary_service --dbname boundaries
-shp2pgsql -s 4326 /data/boundaries/land_2019_wgs.shp public.land_2019_wgs | psql --username boundary_service --dbname boundaries
+# Import shapefiles
+log "Importing shapefiles..."
+import_shapefile "buurt_2019_wgs" "buurt_2019_wgs"
+import_shapefile "wijk_2019_wgs" "wijk_2019_wgs"
+import_shapefile "gem_2019_wgs" "gem_2019_wgs"
+import_shapefile "res_2019_wgs" "res_2019_wgs"
+import_shapefile "prov_2019_wgs" "prov_2019_wgs"
+import_shapefile "land_2019_wgs" "land_2019_wgs"
+
+log "Database initialization completed successfully."
