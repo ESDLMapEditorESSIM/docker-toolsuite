@@ -1,4 +1,13 @@
 #!/bin/bash
+#===================================================================================
+# Set up PostgreSQL users, databases, extensions, and import data.
+# This script is designed to be idempotent. When making any changes, please ensure
+# that it remains that way!
+#
+# This script is automatically executed by postgres-entrypoint.sh when the PostgreSQL
+# container starts.
+#===================================================================================
+
 set -e
 
 log() {
@@ -35,17 +44,21 @@ EOSQL
 EOSQL
 }
 
-
 import_shapefile() {
   local shapefile=$1
   local table_name=$2
 
-  log "Importing $shapefile into $table_name..."
-  shp2pgsql -s 4326 "/data/boundaries/$shapefile.shp" "public.$table_name" | \
-    psql --username boundary_service --dbname boundaries
+  local table_exists=$(psql --username boundary_service --dbname boundaries -t -c "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '$table_name');")
+
+  if [[ $table_exists =~ t ]]; then
+    log "Table $table_name already exists, skipping import"
+  else
+    log "Importing $shapefile into $table_name..."
+    shp2pgsql -s 4326 "/data/boundaries/$shapefile.shp" "public.$table_name" | \
+      psql --username boundary_service --dbname boundaries
+  fi
 }
 
-# Main execution
 log "Starting database initialization..."
 
 # Create users and databases
@@ -54,17 +67,20 @@ create_user_and_db "boundary_service" "${POSTGRES_BOUNDARY_SERVICE_PASSWORD}" "b
 create_user_and_db "drive" "${POSTGRES_DRIVE_PASSWORD}" "esdlrepo" "ALTER USER drive CREATEDB;"
 create_user_and_db "mapeditor" "${POSTGRES_MAPEDITOR_PASSWORD}" "mapeditor" ""
 
-# Setup PostGIS
 log "Setting up PostGIS extensions on boundaries database..."
 psql --username "$POSTGRES_USER" --dbname boundaries -c "CREATE EXTENSION IF NOT EXISTS postgis;"
 psql --username "$POSTGRES_USER" --dbname boundaries -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;"
 
-# Import SQL data
-log "Importing SQL data into boundaries database..."
-psql --username "$POSTGRES_USER" --dbname boundaries -f /data/boundaries/bu_wk_gm_es_pv_la.sql
+# Import boundary_service data - check if already imported
+if ! psql --username boundary_service --dbname boundaries -t -c "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'bu_wk_gm_es_pv_la_2019');" | grep -q t; then
+  log "Importing boundary_service data..."
+  psql --username "$POSTGRES_USER" --dbname boundaries -f /data/boundaries/bu_wk_gm_es_pv_la.sql
+else
+  log "Boundary service data already imported, skipping"
+fi
 
 # Import shapefiles
-log "Importing shapefiles..."
+log "Importing shapefiles if needed..."
 import_shapefile "buurt_2019_wgs" "buurt_2019_wgs"
 import_shapefile "wijk_2019_wgs" "wijk_2019_wgs"
 import_shapefile "gem_2019_wgs" "gem_2019_wgs"

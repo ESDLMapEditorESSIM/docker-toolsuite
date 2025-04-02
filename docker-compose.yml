@@ -32,6 +32,7 @@ services:
   mapeditor:
     container_name: esdl-toolsuite_mapeditor
     image: esdlmapeditoressim/esdl-mapeditor:latest
+    profiles: [mapeditor]
     networks:
       - mapeditor-net
     ports:
@@ -64,6 +65,7 @@ services:
     env_file:
       - ESDLMapEditor/boundary_service.env
 
+  # Init script for the panel-service. This script will setup the Grafana API key.
   panel-service-init:
     container_name: esdl-toolsuite_panel-service-init
     image: esdlmapeditoressim/panel-service:latest
@@ -86,7 +88,7 @@ services:
     container_name: esdl-toolsuite_panel-service
     image: esdlmapeditoressim/panel-service:latest
     ports:
-      - "${PANELSERVICE_PORT:-3400}:4002"
+      - "${PANELSERVICE_PORT:-3400}:5000"
     networks:
       - mapeditor-net
     environment:
@@ -121,6 +123,7 @@ services:
       - POSTGRESQL_USER=drive
       - POSTGRESQL_PASSWORD=password
       - POSTGRESQL_DATABASE=esdlrepo
+      # Uncomment the following line to auto-migrate the database. This could be a destructive operation.
       #- AUTO_MIGRATE=1
     networks:
       - mapeditor-net
@@ -189,7 +192,7 @@ services:
 
   mongo:
     container_name: esdl-toolsuite_mongo
-    image: mvertes/alpine-mongo
+    image: mongo:4.0.28
     volumes:
       - mongo_storage:/data/db
     ports:
@@ -231,7 +234,8 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_storage:/var/lib/postgresql/data
-      - ./BaseInfrastructure/postgres/init-database.sh:/docker-entrypoint-initdb.d/init-database.sh
+      - ./BaseInfrastructure/postgres/init-database.sh:/scripts/init-database.sh
+      - ./BaseInfrastructure/postgres/postgres-entrypoint.sh:/scripts/postgres-entrypoint.sh
       - ./Data/Boundaries:/data/boundaries
     environment:
       - POSTGRES_DB=${POSTGRES_DB:-postgres}
@@ -244,12 +248,13 @@ services:
       test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
       interval: 15s # Set to 15 seconds to prevent a "Connection refused" error from boundary-service trying to connect to postgres. If you receive this error from boundary-service you can try raising this value.
       timeout: 5s
+    entrypoint: ["/bin/bash", "/scripts/postgres-entrypoint.sh"]
     networks:
       - mapeditor-net
 
   pgadmin:
     container_name: esdl-toolsuite_pgadmin
-    image: dpage/pgadmin4
+    image: dpage/pgadmin4:8
     profiles: [debug]
     restart: unless-stopped
     environment:
@@ -324,7 +329,8 @@ services:
 
   grafana:
     container_name: esdl-toolsuite_grafana
-    image: grafana/grafana:8.4.3
+    # From version 11 onwards, dashboards created through ESSIM will complain about Angular support.
+    image: grafana/grafana:10.4.17
     volumes:
       - grafana_storage:/var/lib/grafana
     depends_on:
@@ -339,6 +345,7 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_PANELS_DISABLE_SANITIZE_HTML=true
+      - GF_ANGULAR_SUPPORT_ENABLED=true
       - GF_AUTH_DISABLE_LOGIN_FORM=True
       - GF_AUTH_BASIC_ENABLED=True
       - GF_AUTH_OAUTH_AUTO_LOGIN=True
@@ -363,7 +370,7 @@ services:
 
   rabbitmq:
     container_name: esdl-toolsuite_rabbitmq
-    image: bitnami/rabbitmq:3.9
+    image: bitnami/rabbitmq:3.13
     ports:
       - 5672:5672
       - 15672:15672

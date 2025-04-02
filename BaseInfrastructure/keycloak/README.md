@@ -90,7 +90,7 @@ Mapeditor:
 
 
 
-## Option 2 (depricated now, as Option 1 is better)
+## Option 2 (deprecated now, as Option 1 is better)
 This option copies everything except all secrets.
 
 - Login to the keycloak container `docker exec -it keycloak /bin/bash`
