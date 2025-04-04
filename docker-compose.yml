@@ -244,6 +244,7 @@ services:
       - POSTGRES_KEYCLOAK_PASSWORD=${POSTGRES_KEYCLOAK_PASSWORD:-password}
       - POSTGRES_BOUNDARY_SERVICE_PASSWORD=${POSTGRES_BOUNDARY_SERVICE_PASSWORD:-password}
       - POSTGRES_DRIVE_PASSWORD=${POSTGRES_DRIVE_PASSWORD:-password}
+      - POSTGRES_MAPEDITOR_PASSWORD=${POSTGRES_MAPEDITOR_PASSWORD:-password}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
       interval: 15s # Set to 15 seconds to prevent a "Connection refused" error from boundary-service trying to connect to postgres. If you receive this error from boundary-service you can try raising this value.
