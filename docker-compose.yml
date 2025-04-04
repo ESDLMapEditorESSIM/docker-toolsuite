@@ -228,7 +228,7 @@ services:
 
   postgres:
     container_name: esdl-toolsuite_postgres
-    image: postgis/postgis:12-master
+    image: postgis/postgis:13-master
     restart: unless-stopped
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
