@@ -398,7 +398,7 @@ services:
 
   rabbitmq:
     container_name: esdl-toolsuite_rabbitmq
-    image: bitnami/rabbitmq:3.13
+    image: bitnami/rabbitmq:3.9
     ports:
       - 5672:5672
       - 15672:15672
