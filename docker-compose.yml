@@ -129,7 +129,7 @@ services:
       - mapeditor-net
 
   esdl-drive:
-    container_name: mapeditor-toolsuite_esdl-drive
+    container_name: esdl-toolsuite_esdl-drive
     image: esdlmapeditoressim/esdl-drive:latest
     ports:
       - 9080:9080
@@ -206,7 +206,7 @@ services:
       - mapeditor-net
 
   influxdb:
-    container_name: mapeditor-toolsuite-influxdb
+    container_name: esdl-toolsuite-influxdb
     image: influxdb:1.7
     ports:
       - "${INFLUXDB_PORT:-8086}:8086"
@@ -276,11 +276,12 @@ services:
 
   keycloak:
     container_name: esdl-toolsuite_keycloak
-    image: quay.io/keycloak/keycloak:25.0
+    # Keycloak can do a data migration from the version we've commonly used (11) to 21.1. Afterwards that is no longer
+    # properly supported. So we're moving first to 21.1 and later onwards.
+    image: quay.io/keycloak/keycloak:21.1
     restart: unless-stopped
     environment:
       - KC_DB=postgres
-      #- KC_DB_URL="jdbc:postgresql://postgres:${POSTGRES_PORT:-5432}/keycloak"
       - KC_DB_URL_DATABASE=keycloak
       - KC_DB_URL_HOST=postgres
       - KC_DB_URL_PORT=${POSTGRES_PORT:-5432}
@@ -297,9 +298,9 @@ services:
       - --health-enabled=true  # enable /health, /health/ready and /health/live endpoints
       - --http-relative-path=/auth  # for compatiblity with keycloak <17
       #- --hostname-path=/auth
-      - --hostname-strict=false   # for local dev testing between containern names and localhost
+      - --hostname-strict=false   # for local dev testing between container names and localhost
       - --hostname=localhost  # required for production servers
-      - --hostname-debug=true
+#      - --hostname-debug=true  # Enable this option on keycloak 25.
       #- --hostname-url=http://localhost:8080/
       #- --features="scripts" # for importing realms with js inside them
       #- --proxy=edge  # for external TLS termination by e.g. nginx
@@ -319,6 +320,32 @@ services:
       - mapeditor-net
     volumes:
       - "./BaseInfrastructure/keycloak/:/opt/keycloak/data/import"
+
+  #  keycloak:
+  #    container_name: esdl-toolsuite_keycloak-legacy
+  #    image: quay.io/keycloak/keycloak:11.0.3
+  #    restart: always
+  #    profiles: [keycloak-legacy]
+  #    environment:
+  #      - DB_VENDOR=POSTGRES
+  #      - DB_ADDR=postgres
+  #      - DB_DATABASE=keycloak
+  #      - DB_USER=keycloak
+  #      - DB_SCHEMA=public
+  #      - DB_PASSWORD=password
+  #      - KEYCLOAK_USER=admin
+  #      - KEYCLOAK_PASSWORD=password
+  #      - PROXY_ADDRESS_FORWARDING=true
+  #    ports:
+  #      - "${KEYCLOAK_PORT:-8080}:8080"
+  #      - "${KEYCLOAK_HTTPS_PORT:-8443}:8443"
+  #    depends_on:
+  #      postgres:
+  #        condition: service_healthy
+  #    networks:
+  #      - mapeditor-net
+  #    volumes:
+  #      - "./BaseInfrastructure/keycloak/:/tmp/config/"
 
   # _____ _____ _   _  ___________
   #|  _  |_   _| | | ||  ___| ___ \
