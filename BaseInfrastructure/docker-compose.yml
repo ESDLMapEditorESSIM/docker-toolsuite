@@ -78,7 +78,7 @@ services:
       - GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP=True
       - GF_AUTH_GENERIC_OAUTH_NAME=Auth0
       - GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH=contains(grafana_role, 'Admin') && 'Admin' || contains(grafana_role, 'Editor') && 'Editor' || 'Viewer'
-      - GF_AUTH_SIGNOUT_REDIRECT_URL=http://localhost:8080/auth/realms/esdl-mapeditor/protocol/openid-connect/logout?redirect_uri=http://localhost:${GRAFANA_PORT:-3000}
+      - GF_AUTH_SIGNOUT_REDIRECT_URL=http://localhost:8080/auth/realms/esdl-mapeditor/protocol/openid-connect/logout?post_logout_redirect_uri=http://localhost:${GRAFANA_PORT:-3000}&client_id=essim-dashboard
       - GF_AUTH_GENERIC_OAUTH_CLIENT_ID=essim-dashboard
       - GF_AUTH_GENERIC_OAUTH_SCOPES=openid profile email
       - GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=174522fe-db1c-4384-a3c5-eaa6dc03329b
@@ -149,13 +149,15 @@ services:
       - --health-enabled=true  # enable /health, /health/ready and /health/live endpoints
       - --http-relative-path=/auth   # for compatiblity with keycloak <17  
         #- --hostname-path=/auth
-      - --hostname-strict=false    # for local dev testing between containern names and localhost
-      - --hostname=localhost  # required for production servers
-      - --hostname-debug=true
+      - --hostname-strict=false    # for local dev testing between containern names and localhost (default when start-dev is used)
+      - --hostname=http://localhost:8080/auth/  # required for production servers and localhost deployment
+      - --hostname-backchannel-dynamic=true  # Dynamic resolution of backchannel URLs from incoming request headers (required for localhost deployments)
+      #- --hostname-debug=true # see http://localhost:8080/auth/realms/esdl-mapeditor/hostname-debug for debug info
         #- --hostname-url=http://localhost:8080/
         #- --features="scripts" # for importing realms with js inside them
         #- --proxy=edge  # for external TLS termination by e.g. nginx
       - --import-realm  # import realm
+      - --spi-login-protocol-openid-connect-legacy-logout-redirect-uri=true   # for backwards compatibility with logout redirect of keycloak < 18.0, only works till keycloak < 26.0
     ports:
       - "${KEYCLOAK_PORT:-8080}:8080"
       - "${KEYCLOAK_HTTPS_PORT:-8443}:8443"
