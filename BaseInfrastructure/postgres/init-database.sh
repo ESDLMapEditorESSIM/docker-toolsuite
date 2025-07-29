@@ -10,12 +10,15 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     GRANT ALL PRIVILEGES ON DATABASE boundaries TO boundary_service;
     CREATE USER drive WITH ENCRYPTED PASSWORD '${POSTGRES_DRIVE_PASSWORD}';
     CREATE DATABASE esdlrepo OWNER drive;
+    CREATE DATABASE esdl_geometries OWNER drive;
     GRANT ALL PRIVILEGES ON DATABASE esdlrepo TO drive;
     ALTER USER drive CREATEDB;
     CREATE USER mapeditor WITH ENCRYPTED PASSWORD '${POSTGRES_MAPEDITOR_PASSWORD}';
-    CREATE DATABASE mapeditor OWNER mapeditor;
-    GRAND ALL PRIVILEGES ON DATABASE mapeditor TO mapeditor;
+    CREATE DATABASE mapeditor OWNER mapeditor;    
+    GRANT ALL PRIVILEGES ON DATABASE mapeditor TO mapeditor;
+
 EOSQL
+psql --username "$POSTGRES_USER" --dbname esdl_geometries -c "CREATE EXTENSION IF NOT EXISTS postgis;"
 
 psql --username "$POSTGRES_USER" --dbname boundaries -c "CREATE EXTENSION postgis;"
 psql --username "$POSTGRES_USER" --dbname boundaries -c "CREATE EXTENSION postgis_topology;"

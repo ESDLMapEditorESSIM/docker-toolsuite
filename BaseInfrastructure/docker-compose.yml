@@ -89,7 +89,16 @@ services:
 
   postgres:
     container_name: postgres
-    image: postgis/postgis:12-master
+    #image: postgis/postgis:17-3.5
+    # build own postgis image to include postgis client library with shp2pgsql in it
+    build: 
+      dockerfile_inline: |
+        FROM postgis/postgis:17-3.5 AS builder
+        RUN apt update
+        RUN apt install -y postgis
+      context: .
+      args:
+        - no-cache 
     restart: unless-stopped
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
@@ -104,6 +113,7 @@ services:
       - POSTGRES_KEYCLOAK_PASSWORD=${POSTGRES_KEYCLOAK_PASSWORD}
       - POSTGRES_BOUNDARY_SERVICE_PASSWORD=${POSTGRES_BOUNDARY_SERVICE_PASSWORD}
       - POSTGRES_DRIVE_PASSWORD=${POSTGRES_DRIVE_PASSWORD}
+      - POSTGRES_MAPEDITOR_PASSWORD=${POSTGRES_MAPEDITOR_PASSWORD}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
       interval: 15s # Set to 15 seconds to prevent a "Connection refused" error from boundary-service trying to connect to postgres. If you receive this error from boundary-service you can try raising this value.
@@ -111,23 +121,23 @@ services:
     networks:
       - mapeditor-net
 
-  pgadmin:
-    container_name: pgadmin
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@admin.org}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-    volumes:
-      - pgadmin_storage:/root/.pgadmin
-    ports:
-      - "${PGADMIN_PORT:-5050}:80"
-    restart: unless-stopped
-    networks:
-      - mapeditor-net
+#  pgadmin:
+#    container_name: pgadmin
+#    image: dpage/pgadmin4
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@admin.org}
+#      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+#    volumes:
+#      - pgadmin_storage:/root/.pgadmin
+#    ports:
+#      - "${PGADMIN_PORT:-5050}:80"
+#    restart: unless-stopped
+#    networks:
+#      - mapeditor-net
 
   keycloak:
     container_name: keycloak
-    image: quay.io/keycloak/keycloak:25.0
+    image: quay.io/keycloak/keycloak:26.3
     restart: unless-stopped
     environment:
       - KC_DB=postgres
@@ -156,7 +166,7 @@ services:
         #- --features="scripts" # for importing realms with js inside them
         #- --proxy=edge  # for external TLS termination by e.g. nginx
       - --import-realm  # import realm
-      - --spi-login-protocol-openid-connect-legacy-logout-redirect-uri=true   # for backwards compatibility with logout redirect of keycloak < 18.0, only works till keycloak < 26.0
+#      - --spi-login-protocol-openid-connect-legacy-logout-redirect-uri=true   # for backwards compatibility with logout redirect of keycloak < 18.0, only works till keycloak < 26.0
     ports:
       - "${KEYCLOAK_PORT:-8080}:8080"
       - "${KEYCLOAK_HTTPS_PORT:-8443}:8443"
