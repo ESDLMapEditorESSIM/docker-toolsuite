@@ -121,8 +121,8 @@ The current stack uses docker and docker compose. The tested versions are curren
 
 | Software       | Version |
 | ---------------|---------|
-| Docker engine  |  26.1.3 |
-| Docker Compose |   2.6.1 |
+| Docker engine  |  28.1.1 |
+| Docker Compose |  2.17.0 |
 
 
 ### Steps to follow
