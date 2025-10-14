@@ -12,9 +12,6 @@ volumes:
   postgres_storage:
     name: "baseinfrastructure_postgres_storage"
     driver: local
-  pgadmin_storage:
-    name: "baseinfrastructure_pgadmin_storage"
-    driver: local
 
 networks:
   mapeditor-net:
@@ -32,7 +29,6 @@ services:
   mapeditor:
     container_name: esdl-toolsuite_mapeditor
     image: esdlmapeditoressim/esdl-mapeditor:latest
-    profiles: [mapeditor]
     networks:
       - mapeditor-net
     ports:
@@ -206,7 +202,7 @@ services:
       - mapeditor-net
 
   influxdb:
-    container_name: esdl-toolsuite-influxdb
+    container_name: esdl-toolsuite_influxdb
     image: influxdb:1.7
     ports:
       - "${INFLUXDB_PORT:-8086}:8086"
@@ -228,7 +224,7 @@ services:
 
   postgres:
     container_name: esdl-toolsuite_postgres
-    image: postgis/postgis:13-master
+    image: postgis/postgis:17-master
     restart: unless-stopped
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
@@ -244,27 +240,12 @@ services:
       - POSTGRES_KEYCLOAK_PASSWORD=${POSTGRES_KEYCLOAK_PASSWORD:-password}
       - POSTGRES_BOUNDARY_SERVICE_PASSWORD=${POSTGRES_BOUNDARY_SERVICE_PASSWORD:-password}
       - POSTGRES_DRIVE_PASSWORD=${POSTGRES_DRIVE_PASSWORD:-password}
-      - POSTGRES_MAPEDITOR_PASSWORD=${POSTGRES_MAPEDITOR_PASSWORD:-password}
+      - POSTGRES_DATA_MANAGER_PASSWORD=${POSTGRES_DATA_MANAGER_PASSWORD:-password}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
       interval: 15s # Set to 15 seconds to prevent a "Connection refused" error from boundary-service trying to connect to postgres. If you receive this error from boundary-service you can try raising this value.
       timeout: 5s
     entrypoint: ["/bin/bash", "/scripts/postgres-entrypoint.sh"]
-    networks:
-      - mapeditor-net
-
-  pgadmin:
-    container_name: esdl-toolsuite_pgadmin
-    image: dpage/pgadmin4:8
-    profiles: [debug]
-    restart: unless-stopped
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@admin.org}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-    volumes:
-      - pgadmin_storage:/root/.pgadmin
-    ports:
-      - "${PGADMIN_PORT:-5050}:80"
     networks:
       - mapeditor-net
 

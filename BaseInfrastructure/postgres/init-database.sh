@@ -20,13 +20,15 @@ create_user_and_db() {
   local dbname=$3
   local extra_grants=$4
 
-  log "Creating user and database for $username..."
+  log "Creating or updating user and database for $username..."
 
   psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     DO \$\$
     BEGIN
       IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '$username') THEN
         CREATE USER $username WITH ENCRYPTED PASSWORD '$password';
+      ELSE
+        ALTER ROLE $username WITH ENCRYPTED PASSWORD '$password';
       END IF;
     END;
     \$\$;
@@ -38,6 +40,7 @@ EOSQL
     \gexec
 EOSQL
 
+  # Grant privileges (idempotent)
   psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     GRANT ALL PRIVILEGES ON DATABASE $dbname TO $username;
     $extra_grants
@@ -65,7 +68,7 @@ log "Starting database initialization..."
 create_user_and_db "keycloak" "${POSTGRES_KEYCLOAK_PASSWORD}" "keycloak" ""
 create_user_and_db "boundary_service" "${POSTGRES_BOUNDARY_SERVICE_PASSWORD}" "boundaries" ""
 create_user_and_db "drive" "${POSTGRES_DRIVE_PASSWORD}" "esdlrepo" "ALTER USER drive CREATEDB;"
-create_user_and_db "mapeditor" "${POSTGRES_MAPEDITOR_PASSWORD}" "mapeditor" ""
+create_user_and_db "data_manager" "${POSTGRES_DATA_MANAGER_PASSWORD}" "data_manager" ""
 
 log "Setting up PostGIS extensions on boundaries database..."
 psql --username "$POSTGRES_USER" --dbname boundaries -c "CREATE EXTENSION IF NOT EXISTS postgis;"
