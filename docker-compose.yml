@@ -29,6 +29,7 @@ services:
   mapeditor:
     container_name: esdl-toolsuite_mapeditor
     image: esdlmapeditoressim/esdl-mapeditor:latest
+#    profiles: [mapeditor]
     networks:
       - mapeditor-net
     ports:
@@ -85,18 +86,17 @@ services:
     image: esdlmapeditoressim/panel-service:latest
     ports:
       - "${PANELSERVICE_PORT:-3400}:5000"
-    networks:
-      - mapeditor-net
     environment:
-      - ENV=dev
       - INTERNAL_GRAFANA_HOST=grafana
       - INTERNAL_GRAFANA_PORT=3000
-      - EXTERNAL_GRAFANA_URL=http://localhost:3000
+      - EXTERNAL_GRAFANA_URL=http://localhost:${GRAFANA_PORT:-3000}
     env_file:
       - ESDLMapEditor/panel_service.env
     depends_on:
       panel-service-init:
         condition: service_completed_successfully
+    networks:
+      - mapeditor-net
 
   # _____ ___________ _      ____________ _____ _   _ _____
   #|  ___/  ___|  _  \ |     |  _  \ ___ \_   _| | | |  ___|
@@ -365,7 +365,7 @@ services:
       - GF_AUTH_GENERIC_OAUTH_CLIENT_ID=essim-dashboard
       - GF_AUTH_GENERIC_OAUTH_SCOPES=openid profile email
       - GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=174522fe-db1c-4384-a3c5-eaa6dc03329b
-      - GF_AUTH_SIGNOUT_REDIRECT_URL=http://localhost:8080/auth/realms/esdl-mapeditor/protocol/openid-connect/logout?redirect_uri=http://localhost:${GRAFANA_PORT:-3000}
+      - GF_AUTH_SIGNOUT_REDIRECT_URL=http://localhost:8080/auth/realms/esdl-mapeditor/protocol/openid-connect/logout
       - GF_AUTH_GENERIC_OAUTH_AUTH_URL=http://localhost:8080/auth/realms/esdl-mapeditor/protocol/openid-connect/auth
       - GF_AUTH_GENERIC_OAUTH_TOKEN_URL=http://keycloak:8080/auth/realms/esdl-mapeditor/protocol/openid-connect/token
       - GF_AUTH_GENERIC_OAUTH_API_URL=http://keycloak:8080/auth/realms/esdl-mapeditor/protocol/openid-connect/userinfo
