@@ -29,7 +29,6 @@ services:
   mapeditor:
     container_name: esdl-toolsuite_mapeditor
     image: esdlmapeditoressim/esdl-mapeditor:25.10.0
-#    image: esdlmapeditoressim/esdl-mapeditor:latest
 #    profiles: [mapeditor]
     networks:
       - mapeditor-net
@@ -39,6 +38,8 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_DATA_MANAGER_PASSWORD:-password}
     env_file:
       - ESDLMapEditor/mapeditor_open_source.env
+    volumes:
+      - "./ESDLMapEditor/esdl_mapeditor/client_secrets_opensource.json:/usr/src/app/credentials/client_secrets_opensource.json"
     depends_on:
       influxdb:
         condition: service_healthy
@@ -114,7 +115,7 @@ services:
 
   cdo-server:
     container_name: esdl-toolsuite_cdo-server
-    image: esdlmapeditoressim/cdo-server:latest
+    image: esdlmapeditoressim/cdo-server:25.08
     ports:
       - "2036:2036"
     depends_on:
@@ -127,13 +128,13 @@ services:
       - POSTGRESQL_PASSWORD=password
       - POSTGRESQL_DATABASE=esdlrepo
       # Uncomment the following line to auto-migrate the database. This could be a destructive operation.
-      #- AUTO_MIGRATE=1
+      - AUTO_UPDATE=1
     networks:
       - mapeditor-net
 
   esdl-drive:
     container_name: esdl-toolsuite_esdl-drive
-    image: esdlmapeditoressim/esdl-drive:latest
+    image: esdlmapeditoressim/esdl-drive:25.08
     ports:
       - 9080:9080
       - 9443:9443
