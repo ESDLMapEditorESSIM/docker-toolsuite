@@ -399,7 +399,7 @@ services:
       - mapeditor-net
     environment:
       - RABBITMQ_DEFAULT_USER=admin
-      - RABBITMQ_DEFUALT_PASS=admin
+      - RABBITMQ_DEFAULT_PASS=admin
     healthcheck:
       test: rabbitmq-diagnostics -q ping
       interval: 30s
