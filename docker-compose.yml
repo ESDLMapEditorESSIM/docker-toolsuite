@@ -28,18 +28,25 @@ services:
 
   mapeditor:
     container_name: esdl-toolsuite_mapeditor
-    image: esdlmapeditoressim/esdl-mapeditor:latest
+    image: esdlmapeditoressim/esdl-mapeditor:25.10.0
+#    image: esdlmapeditoressim/esdl-mapeditor:latest
 #    profiles: [mapeditor]
     networks:
       - mapeditor-net
     ports:
       - "${MAPEDITOR_PORT:-8111}:8111"
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_DATA_MANAGER_PASSWORD:-password}
     env_file:
       - ESDLMapEditor/mapeditor_open_source.env
     depends_on:
       influxdb:
         condition: service_healthy
       mongo:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
 
   # _____ ___________ _       _____ ___________ _   _ _____ _____  _____ _____
@@ -219,6 +226,8 @@ services:
       test: ["CMD", "curl", "-f", "http://influxdb:8086/ping"]
       interval: 10s
       timeout: 5s
+      retries: 10
+      start_period: 60s
     networks:
       - mapeditor-net
 
@@ -230,8 +239,9 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_storage:/var/lib/postgresql/data
-      - ./BaseInfrastructure/postgres/init-database.sh:/scripts/init-database.sh
-      - ./BaseInfrastructure/postgres/postgres-entrypoint.sh:/scripts/postgres-entrypoint.sh
+#      - ./BaseInfrastructure/postgres/init-database.sh:/scripts/init-database.sh
+      - ./BaseInfrastructure/postgres/init-database.sh:/docker-entrypoint-initdb.d/init-database.sh
+#      - ./BaseInfrastructure/postgres/postgres-entrypoint.sh:/scripts/postgres-entrypoint.sh
       - ./Data/Boundaries:/data/boundaries
     environment:
       - POSTGRES_DB=${POSTGRES_DB:-postgres}
@@ -242,10 +252,12 @@ services:
       - POSTGRES_DRIVE_PASSWORD=${POSTGRES_DRIVE_PASSWORD:-password}
       - POSTGRES_DATA_MANAGER_PASSWORD=${POSTGRES_DATA_MANAGER_PASSWORD:-password}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
-      interval: 15s # Set to 15 seconds to prevent a "Connection refused" error from boundary-service trying to connect to postgres. If you receive this error from boundary-service you can try raising this value.
-      timeout: 5s
-    entrypoint: ["/bin/bash", "/scripts/postgres-entrypoint.sh"]
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER} && find /var/lib/postgresql/data/.db_init_done"]
+      interval: 30s # Set to 15 seconds to prevent a "Connection refused" error from boundary-service trying to connect to postgres. If you receive this error from boundary-service you can try raising this value.
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+#    entrypoint: ["/bin/bash", "/scripts/postgres-entrypoint.sh"]
     networks:
       - mapeditor-net
 
@@ -379,12 +391,18 @@ services:
 
   rabbitmq:
     container_name: esdl-toolsuite_rabbitmq
-    image: bitnami/rabbitmq:3.9
+    image: rabbitmq:3-management
     ports:
       - 5672:5672
       - 15672:15672
     networks:
       - mapeditor-net
     environment:
-      - RABBITMQ_USERNAME=admin
-      - RABBITMQ_PASSWORD=admin
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFUALT_PASS=admin
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s

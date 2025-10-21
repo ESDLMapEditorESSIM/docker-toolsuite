@@ -95,3 +95,5 @@ import_shapefile "prov_2019_wgs" "prov_2019_wgs"
 import_shapefile "land_2019_wgs" "land_2019_wgs"
 
 log "Database initialization completed successfully."
+
+touch /var/lib/postgresql/data/.db_init_done
