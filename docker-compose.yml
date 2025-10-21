@@ -379,12 +379,12 @@ services:
 
   rabbitmq:
     container_name: esdl-toolsuite_rabbitmq
-    image: bitnami/rabbitmq:3.9
+    image: rabbitmq:3-management
     ports:
       - 5672:5672
       - 15672:15672
     networks:
       - mapeditor-net
     environment:
-      - RABBITMQ_USERNAME=admin
-      - RABBITMQ_PASSWORD=admin
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
