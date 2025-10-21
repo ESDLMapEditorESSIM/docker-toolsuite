@@ -33,7 +33,6 @@ create_user_and_db() {
     END;
     \$\$;
 EOSQL
-psql --username "$POSTGRES_USER" --dbname esdl_geometries -c "CREATE EXTENSION IF NOT EXISTS postgis;"
 
   psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     SELECT 'CREATE DATABASE $dbname OWNER $username'
@@ -72,7 +71,9 @@ create_user_and_db "drive" "${POSTGRES_DRIVE_PASSWORD}" "esdlrepo" "ALTER USER d
 create_user_and_db "drive" "${POSTGRES_DRIVE_PASSWORD}" "esdl_geometries" "ALTER USER drive CREATEDB;"
 create_user_and_db "data_manager" "${POSTGRES_DATA_MANAGER_PASSWORD}" "data_manager" ""
 
-log "Setting up PostGIS extensions on boundaries database..."
+log "Setting up PostGIS extensions on databases..."
+psql --username "$POSTGRES_USER" --dbname esdl_geometries -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+psql --username "$POSTGRES_USER" --dbname esdl_geometries -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;"
 psql --username "$POSTGRES_USER" --dbname boundaries -c "CREATE EXTENSION IF NOT EXISTS postgis;"
 psql --username "$POSTGRES_USER" --dbname boundaries -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;"
 
