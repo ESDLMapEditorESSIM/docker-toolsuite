@@ -37,9 +37,9 @@ services:
     networks:
       - mapeditor-net
     environment:
-      - ENV=dev
       - INTERNAL_GRAFANA_HOST=grafana
       - INTERNAL_GRAFANA_PORT=3000
       - EXTERNAL_GRAFANA_URL=http://localhost:3000
     env_file:
       - panel_service.env
+
