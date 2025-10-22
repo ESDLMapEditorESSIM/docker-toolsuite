@@ -49,6 +49,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      panel-service:
+        condition: service_healthy
 
   # _____ ___________ _       _____ ___________ _   _ _____ _____  _____ _____
   #|  ___/  ___|  _  \ |     /  ___|  ___| ___ \ | | |_   _/  __ \|  ___/  ___|
@@ -103,6 +105,11 @@ services:
     depends_on:
       panel-service-init:
         condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/status"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
     networks:
       - mapeditor-net
 
