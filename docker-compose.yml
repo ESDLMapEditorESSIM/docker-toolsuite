@@ -151,6 +151,10 @@ services:
       - cdo-server
     environment:
       - CDO_SERVER_HOST=cdo-server:2036
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=drive
+      - POSTGRES_PASSWORD=${POSTGRES_DRIVE_PASSWORD:-password}
       - KEYCLOAK_REALM=http://keycloak:8080/auth/realms/esdl-mapeditor
       - KEYCLOAK_REALM_EXTERNAL=http://localhost:8080/auth/realms/esdl-mapeditor
     networks:
