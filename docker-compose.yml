@@ -203,7 +203,7 @@ services:
       - mapeditor-net
 
   essim-engine:
-    image: esdlmapeditoressim/essim:35f7318
+    image: esdlmapeditoressim/essim:latest
     ports:
       - 8112:8112
     environment:
