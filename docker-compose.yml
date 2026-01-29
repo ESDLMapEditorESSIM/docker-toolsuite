@@ -29,7 +29,7 @@ services:
   mapeditor:
     container_name: esdl-toolsuite_mapeditor
     image: esdlmapeditoressim/esdl-mapeditor:25.10.0
-#    profiles: [mapeditor]
+    profiles: [mapeditor]
     networks:
       - mapeditor-net
     ports:
@@ -251,9 +251,7 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_storage:/var/lib/postgresql/data
-#      - ./BaseInfrastructure/postgres/init-database.sh:/scripts/init-database.sh
       - ./BaseInfrastructure/postgres/init-database.sh:/docker-entrypoint-initdb.d/init-database.sh
-#      - ./BaseInfrastructure/postgres/postgres-entrypoint.sh:/scripts/postgres-entrypoint.sh
       - ./Data/Boundaries:/data/boundaries
     environment:
       - POSTGRES_DB=${POSTGRES_DB:-postgres}
@@ -264,12 +262,12 @@ services:
       - POSTGRES_DRIVE_PASSWORD=${POSTGRES_DRIVE_PASSWORD:-password}
       - POSTGRES_DATA_MANAGER_PASSWORD=${POSTGRES_DATA_MANAGER_PASSWORD:-password}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER} && find /var/lib/postgresql/data/.db_init_done"]
-      interval: 30s # Set to 15 seconds to prevent a "Connection refused" error from boundary-service trying to connect to postgres. If you receive this error from boundary-service you can try raising this value.
+      # Check postgres is ready AND either init script completed (.db_init_done) OR database was migrated (keycloak db exists)
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER} && (test -f /var/lib/postgresql/data/.db_init_done || psql -U $${POSTGRES_USER} -d $${POSTGRES_DB} -tAc \"SELECT 1 FROM pg_database WHERE datname='keycloak'\" | grep -q 1)"]
+      interval: 30s
       timeout: 10s
       retries: 10
       start_period: 60s
-#    entrypoint: ["/bin/bash", "/scripts/postgres-entrypoint.sh"]
     networks:
       - mapeditor-net
 
