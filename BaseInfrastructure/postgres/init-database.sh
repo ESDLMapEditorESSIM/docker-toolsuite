@@ -64,6 +64,12 @@ import_shapefile() {
 
 log "Starting database initialization..."
 
+# Ensure superuser password is up-to-date (important after migrations where hash format may change)
+log "Updating superuser password..."
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+  ALTER ROLE $POSTGRES_USER WITH ENCRYPTED PASSWORD '$POSTGRES_PASSWORD';
+EOSQL
+
 # Create users and databases
 create_user_and_db "keycloak" "${POSTGRES_KEYCLOAK_PASSWORD}" "keycloak" ""
 create_user_and_db "boundary_service" "${POSTGRES_BOUNDARY_SERVICE_PASSWORD}" "boundaries" ""

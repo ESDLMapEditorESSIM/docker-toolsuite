@@ -29,6 +29,7 @@ services:
   mapeditor:
     container_name: esdl-toolsuite_mapeditor
     image: esdlmapeditoressim/esdl-mapeditor:25.10.0
+    restart: unless-stopped
     profiles: [mapeditor]
     networks:
       - mapeditor-net
@@ -62,6 +63,7 @@ services:
   boundary-service:
     container_name: esdl-toolsuite_boundary-service
     image: esdlmapeditoressim/boundary-service:latest
+    restart: unless-stopped
     networks:
       - mapeditor-net
     ports:
@@ -94,6 +96,7 @@ services:
   panel-service:
     container_name: esdl-toolsuite_panel-service
     image: esdlmapeditoressim/panel-service:latest
+    restart: unless-stopped
     ports:
       - "${PANELSERVICE_PORT:-3400}:5000"
     environment:
@@ -123,6 +126,7 @@ services:
   cdo-server:
     container_name: esdl-toolsuite_cdo-server
     image: esdlmapeditoressim/cdo-server:25.08
+    restart: unless-stopped
     ports:
       - "2036:2036"
     depends_on:
@@ -134,20 +138,19 @@ services:
       - POSTGRESQL_USER=drive
       - POSTGRESQL_PASSWORD=password
       - POSTGRESQL_DATABASE=esdlrepo
-      # Uncomment the following line to auto-migrate the database. This could be a destructive operation.
-      - AUTO_UPDATE=1
+      # Set AUTO_UPDATE=1 to auto-migrate the database. This could be a destructive operation.
+      - AUTO_UPDATE=0
     networks:
       - mapeditor-net
 
   esdl-drive:
     container_name: esdl-toolsuite_esdl-drive
     image: esdlmapeditoressim/esdl-drive:25.08
+    restart: unless-stopped
     ports:
       - 9080:9080
       - 9443:9443
     depends_on:
-      - cdo-server
-    links:
       - cdo-server
     environment:
       - CDO_SERVER_HOST=cdo-server:2036
@@ -170,6 +173,7 @@ services:
   essim-engine:
     container_name: esdl-toolsuite_essim-engine
     image: esdlmapeditoressim/essim:latest
+    restart: unless-stopped
     ports:
       - 8112:8112
     environment:
@@ -191,10 +195,16 @@ services:
   nats:
     container_name: esdl-toolsuite_nats
     image: esdlmapeditoressim/nats-server:latest
+    restart: unless-stopped
     ports:
       - 4222:4222
       - 8222:8222
       - 6222:6222
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - mapeditor-net
 
@@ -208,12 +218,13 @@ services:
   mongo:
     container_name: esdl-toolsuite_mongo
     image: mongo:4.0.28
+    restart: unless-stopped
     volumes:
       - mongo_storage:/data/db
     ports:
       - "${MONGO_PORT:-27017}:27017"
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongo mongo:27017/test --quiet
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 10s
       retries: 5
@@ -223,6 +234,7 @@ services:
   influxdb:
     container_name: esdl-toolsuite_influxdb
     image: influxdb:1.7
+    restart: unless-stopped
     ports:
       - "${INFLUXDB_PORT:-8086}:8086"
       - "${INFLUXDB_RPC_PORT:-8088}:8088"
@@ -325,6 +337,7 @@ services:
     volumes:
       - "./BaseInfrastructure/keycloak/:/opt/keycloak/data/import"
 
+  # The below is the config for the old Keycloak version, deprecated but available if you cannot upgrade yet.
   #  keycloak:
   #    container_name: esdl-toolsuite_keycloak-legacy
   #    image: quay.io/keycloak/keycloak:11.0.3
@@ -362,6 +375,7 @@ services:
     container_name: esdl-toolsuite_grafana
     # From version 11 onwards, dashboards created through ESSIM will complain about Angular support.
     image: grafana/grafana:10.4.17
+    restart: unless-stopped
     volumes:
       - grafana_storage:/var/lib/grafana
     depends_on:
@@ -402,6 +416,7 @@ services:
   rabbitmq:
     container_name: esdl-toolsuite_rabbitmq
     image: rabbitmq:3-management
+    restart: unless-stopped
     ports:
       - 5672:5672
       - 15672:15672
