@@ -1,3 +1,13 @@
+# ==============================================================================
+# DEPRECATED: This modular docker-compose file is deprecated.
+# Use the root docker-compose.yml instead, which contains all services.
+#
+# From the repository root, run:
+#   docker-compose up
+#
+# This file is kept for reference only and may be removed in a future release.
+# ==============================================================================
+
 version: '3'
 
 networks:

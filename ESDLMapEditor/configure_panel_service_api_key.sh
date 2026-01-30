@@ -1,4 +1,7 @@
 #!/bin/sh
+# Manual helper script to configure the Grafana API key for panel-service.
+# Run this from the host machine (not inside a container) after Grafana is running.
+# Note: The docker-compose.yml uses panel-service-init container for automated setup.
 . ./panel_service.env
 if [ -z $GRAFANA_API_KEY ] || [ "$GRAFANA_API_KEY" = "null" ] ; then
   GRAFANA_API_KEY=$(curl --insecure -s -X POST -H "Content-Type: application/json" -d '{
