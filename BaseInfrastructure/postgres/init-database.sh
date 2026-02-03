@@ -57,6 +57,7 @@ import_shapefile() {
     log "Table $table_name already exists, skipping import"
   else
     log "Importing $shapefile into $table_name..."
+
     shp2pgsql -s 4326 "/data/boundaries/$shapefile.shp" "public.$table_name" | \
       psql --username boundary_service --dbname boundaries
   fi

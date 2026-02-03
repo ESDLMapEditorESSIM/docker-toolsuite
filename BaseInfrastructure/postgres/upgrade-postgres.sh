@@ -126,3 +126,4 @@ docker rm -f pg_restore >/dev/null 2>&1 || true
 # We don't remove the backup directory in case of a calamity.
 
 log "PostgreSQL upgrade completed successfully. Modify the docker-compose.yml to use postgis/postgis:17-master and start."
+log "After postgres is running, re-apply user passwords by running: ./BaseInfrastructure/postgres/run-init-database.sh"
