@@ -77,6 +77,7 @@ create_user_and_db "boundary_service" "${POSTGRES_BOUNDARY_SERVICE_PASSWORD}" "b
 create_user_and_db "drive" "${POSTGRES_DRIVE_PASSWORD}" "esdlrepo" "ALTER USER drive CREATEDB;"
 create_user_and_db "drive" "${POSTGRES_DRIVE_PASSWORD}" "esdl_geometries" "ALTER USER drive CREATEDB;"
 create_user_and_db "data_manager" "${POSTGRES_DATA_MANAGER_PASSWORD}" "data_manager" ""
+create_user_and_db "essim"  "${POSTGRES_ESSIM_PASSWORD}" "essim" ""
 
 log "Setting up PostGIS extensions on databases..."
 psql --username "$POSTGRES_USER" --dbname esdl_geometries -c "CREATE EXTENSION IF NOT EXISTS postgis;"
