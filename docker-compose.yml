@@ -256,7 +256,7 @@ services:
       - "./BaseInfrastructure/keycloak/:/tmp/config/"
 
   rabbitmq:
-    image: bitnami/rabbitmq:3.9
+    image: bitnamilegacy/rabbitmq:3.9
     ports:
       - 5672:5672
       - 15672:15672
