@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-
+# crrate postgres database stucture and users
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     CREATE USER keycloak WITH ENCRYPTED PASSWORD '${POSTGRES_KEYCLOAK_PASSWORD}';
     CREATE DATABASE keycloak OWNER keycloak;
@@ -13,7 +13,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     GRANT ALL PRIVILEGES ON DATABASE esdlrepo TO drive;
     ALTER USER drive CREATEDB;
 EOSQL
-
+# source boundary_services
 psql --username "$POSTGRES_USER" --dbname boundaries -c "CREATE EXTENSION postgis;"
 psql --username "$POSTGRES_USER" --dbname boundaries -c "CREATE EXTENSION postgis_topology;"
 
@@ -25,3 +25,5 @@ shp2pgsql -s 4326 /data/boundaries/gem_2019_wgs.shp public.gem_2019_wgs | psql -
 shp2pgsql -s 4326 /data/boundaries/res_2019_wgs.shp public.res_2019_wgs | psql --username boundary_service --dbname boundaries
 shp2pgsql -s 4326 /data/boundaries/prov_2019_wgs.shp public.prov_2019_wgs | psql --username boundary_service --dbname boundaries
 shp2pgsql -s 4326 /data/boundaries/land_2019_wgs.shp public.land_2019_wgs | psql --username boundary_service --dbname boundaries
+# source keycloak with initial install and esdi realm (notice this sql injects password from the tutorial so env is overidden)
+psql --username "$POSTGRES_USER" --dbname keycloak -f ../keycloak/keycloak.postgres.sql

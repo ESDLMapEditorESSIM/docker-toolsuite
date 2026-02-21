@@ -1,7 +1,7 @@
 version: "3.8"
 
-# WARMING: this single file stack deployment is not working yet nor is adapted to the .env file in BaseInfrastructure.
-# This is still work in progress and uses the wrong keycloak
+# WARMING: this single file stack deployment and not ready to be used in production.
+# This is still work in progress and uses no the right keycloak v20.0.3 LTS
 
 volumes:
   # For backwards compatibility, use the "old" names.
@@ -149,6 +149,9 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-postgres}
       - POSTGRES_USER=${POSTGRES_DB_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWD:-password}
+      - POSTGRES_KEYCLOAK_PASSWORD=${POSTGRES_KEYCLOAK_PASSWORD:-password}
+      - POSTGRES_BOUNDARY_SERVICE_PASSWORD=${POSTGRES_BOUNDARY_SERVICE_PASSWORD:-password}
+      - POSTGRES_DRIVE_PASSWORD=${POSTGRES_DRIVE_PASSWORD:-password}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
       interval: 15s # Set to 15 seconds to prevent a "Connection refused" error from boundary-service trying to connect to postgres. If you receive this error from boundary-service you can try raising this value.
@@ -231,29 +234,32 @@ services:
     networks:
       - mapeditor-net
 
+  # /bin/bash -c "cp /tmp/config/keycloak.conf /opt/keycloak/conf/keycloak.conf"
+  # > keycloak.stdout 2>&1 echo -n "$!" > keycloak.pid
   keycloak:
-    image: quay.io/keycloak/keycloak:11.0.3
-    restart: always
+    image: quay.io/keycloak/keycloak:20.0.3
+    command: start-dev --hostname-strict false
     environment:
-      - DB_VENDOR=POSTGRES
-      - DB_ADDR=postgres
-      - DB_DATABASE=keycloak
-      - DB_USER=keycloak
-      - DB_SCHEMA=public
-      - DB_PASSWORD=password
-      - KEYCLOAK_USER=admin
-      - KEYCLOAK_PASSWORD=admin
-      - PROXY_ADDRESS_FORWARDING=true
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://host.docker.internal:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: password
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-password}
+      PROXY_ADDRESS_FORWARDING: 1
     ports:
       - "${KEYCLOAK_PORT:-8080}:8080"
       - "${KEYCLOAK_HTTPS_PORT:-8443}:8443"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - mapeditor-net
     volumes:
-      - "./BaseInfrastructure/keycloak/:/tmp/config/"
+      - ./BaseInfrastructure/keycloak:/tmp/config
+      - ./BaseInfrastructure/keycloak/keycloak.conf:/opt/keycloak/etc/keycloak.conf
 
   rabbitmq:
     image: bitnamilegacy/rabbitmq:3.9
