@@ -1,4 +1,12 @@
-version: "3.8"
+# ==============================================================================
+# DEPRECATED: This modular docker-compose file is deprecated.
+# Use the root docker-compose.yml instead, which contains all services.
+#
+# From the repository root, run:
+#   docker-compose up
+#
+# This file is kept for reference only and may be removed in a future release.
+# ==============================================================================
 
 networks:
   mapeditor-net:
@@ -8,7 +16,9 @@ networks:
 services:
   mapeditor:
     container_name: esdl-mapeditor
-    image: esdlmapeditoressim/esdl-mapeditor:latest
+#    image: esdlmapeditoressim/esdl-mapeditor:latest
+#    image: ci.tno.nl/geis/esdl-mapeditor/esdl-mapeditor:main
+    image: ci.tno.nl/geis/esdl-mapeditor/esdl-mapeditor:main-gunicorn
     volumes:
       - "./esdl_mapeditor/client_secrets_opensource.json:/usr/src/app/credentials/client_secrets_opensource.json"
     networks:
@@ -33,13 +43,13 @@ services:
     image: esdlmapeditoressim/panel-service:latest
     # image: panel-service:latest
     ports:
-      - 3400:5000
+      - "${PANELSERVICE_PORT:-3400}:4002"
     networks:
       - mapeditor-net
     environment:
-      - ENV=dev
       - INTERNAL_GRAFANA_HOST=grafana
       - INTERNAL_GRAFANA_PORT=3000
       - EXTERNAL_GRAFANA_URL=http://localhost:3000
     env_file:
       - panel_service.env
+
