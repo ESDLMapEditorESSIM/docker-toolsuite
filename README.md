@@ -2,6 +2,9 @@
 
 This project contains all information necesarry to run the open source ESDL MapEditor and ESSIM toolsuite on your local machine or cloud infrastructure.
 
+> We did a major new release in March 2026, aiming to simplify the deployment. We now have a single docker-compose.yml,
+> and various manual steps are now automated. Look at UPGRADE.md for upgrade steps.
+
 ## Open source components (with Github links)
 
 This software stack consists of the following open source components with the link to their github repositories:
