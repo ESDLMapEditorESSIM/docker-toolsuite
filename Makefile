@@ -3,12 +3,18 @@
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
 
-setup: ## Copy .env.template to .env (if .env doesn't exist)
+setup: ## Copy .env.template to .env and create required env files (if they don't exist yet)
 	@if [ -f .env ]; then \
 		echo ".env already exists, skipping"; \
 	else \
 		cp .env.template .env; \
 		echo "Created .env from template - edit as needed"; \
+	fi
+	@if [ -f ESDLMapEditor/panel_service.env ]; then \
+		echo "ESDLMapEditor/panel_service.env already exists, skipping"; \
+	else \
+		cp ESDLMapEditor/panel_service.env.template ESDLMapEditor/panel_service.env; \
+		echo "Created ESDLMapEditor/panel_service.env (will be populated automatically on first start)"; \
 	fi
 
 up: ## Start all services

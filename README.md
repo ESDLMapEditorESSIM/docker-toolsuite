@@ -142,6 +142,12 @@ Copy the environment template and adjust to your situation (defaults work out of
 cp .env.template .env
 ```
 
+Create the panel service env file (required before starting, will be populated automatically on first start):
+
+```sh
+cp ESDLMapEditor/panel_service.env.template ESDLMapEditor/panel_service.env
+```
+
 Start all services:
 
 ```sh
@@ -321,7 +327,7 @@ Required changes:
 
 | Service    | User             | Password | Configured in                                     | Comment |
 | ---------- | ---------------- | -------- | ------------------------------------------------- | ------- |
-| Keycloak   | admin            | password | .env                                              |         |
+| Keycloak   | admin            | password | .env                                              | Set on first start only. If the database already exists, the password is not changed. To reset: `docker compose down -v` and restart. |
 | Grafana    | admin            | password | docker-compose.yml                                |         |
 | InfluxDB   | admin            | admin    | docker-compose.yml                                |         |
 | PostgresDB | postgres         | password | .env                                              |         |
