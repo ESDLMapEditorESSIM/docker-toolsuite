@@ -30,7 +30,6 @@ services:
     container_name: esdl-toolsuite_mapeditor
     image: esdlmapeditoressim/esdl-mapeditor:25.10.0
     restart: unless-stopped
-    profiles: [mapeditor]
     networks:
       - mapeditor-net
     ports:
