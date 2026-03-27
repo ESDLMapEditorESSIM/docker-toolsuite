@@ -10,6 +10,12 @@
 
 set -e
 
+DB_INIT_MODE="${DB_INIT_MODE:-create_only}"
+ENABLE_KEYCLOAK_DB="${ENABLE_KEYCLOAK_DB:-false}"
+IMPORT_BOUNDARY_DATA="${IMPORT_BOUNDARY_DATA:-true}"
+IMPORT_BOUNDARY_SHAPEFILES="${IMPORT_BOUNDARY_SHAPEFILES:-true}"
+BOUNDARY_DATA_DIR="${BOUNDARY_DATA_DIR:-/data/boundaries}"
+
 log() {
   echo "$(date '+%Y-%m-%d %H:%M:%S') - $1"
 }
@@ -20,19 +26,33 @@ create_user_and_db() {
   local dbname=$3
   local extra_grants=$4
 
-  log "Creating or updating user and database for $username..."
+  if [[ "$DB_INIT_MODE" == "create_or_update" ]]; then
+    log "Creating or updating user and database for $username..."
 
-  psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
-    DO \$\$
-    BEGIN
-      IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '$username') THEN
-        CREATE USER $username WITH ENCRYPTED PASSWORD '$password';
-      ELSE
-        ALTER ROLE $username WITH ENCRYPTED PASSWORD '$password';
-      END IF;
-    END;
-    \$\$;
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+      DO \$\$
+      BEGIN
+        IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '$username') THEN
+          CREATE USER $username WITH ENCRYPTED PASSWORD '$password';
+        ELSE
+          ALTER ROLE $username WITH ENCRYPTED PASSWORD '$password';
+        END IF;
+      END;
+      \$\$;
 EOSQL
+  else
+    log "Creating user and database for $username..."
+
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+      DO \$\$
+      BEGIN
+        IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '$username') THEN
+          CREATE USER $username WITH ENCRYPTED PASSWORD '$password';
+        END IF;
+      END;
+      \$\$;
+EOSQL
+  fi
 
   psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     SELECT 'CREATE DATABASE $dbname OWNER $username'
@@ -40,7 +60,6 @@ EOSQL
     \gexec
 EOSQL
 
-  # Grant privileges (idempotent)
   psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     GRANT ALL PRIVILEGES ON DATABASE $dbname TO $username;
     $extra_grants
@@ -58,21 +77,63 @@ import_shapefile() {
   else
     log "Importing $shapefile into $table_name..."
 
-    shp2pgsql -s 4326 "/data/boundaries/$shapefile.shp" "public.$table_name" | \
+    shp2pgsql -s 4326 "$BOUNDARY_DATA_DIR/$shapefile.shp" "public.$table_name" | \
       psql --username boundary_service --dbname boundaries
   fi
 }
 
+import_boundary_data() {
+  if [[ "$IMPORT_BOUNDARY_DATA" != "true" ]]; then
+    log "Boundary service data import disabled, skipping"
+    return
+  fi
+
+  if [[ ! -f "$BOUNDARY_DATA_DIR/bu_wk_gm_es_pv_la.sql" ]]; then
+    log "Boundary SQL file not found at $BOUNDARY_DATA_DIR/bu_wk_gm_es_pv_la.sql, skipping"
+    return
+  fi
+
+  if ! psql --username boundary_service --dbname boundaries -t -c "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'bu_wk_gm_es_pv_la_2019');" | grep -q t; then
+    log "Importing boundary_service data..."
+    psql --username "$POSTGRES_USER" --dbname boundaries -f "$BOUNDARY_DATA_DIR/bu_wk_gm_es_pv_la.sql"
+  else
+    log "Boundary service data already imported, skipping"
+  fi
+}
+
+import_boundary_shapefiles() {
+  if [[ "$IMPORT_BOUNDARY_SHAPEFILES" != "true" ]]; then
+    log "Boundary shapefile import disabled, skipping"
+    return
+  fi
+
+  if [[ ! -f "$BOUNDARY_DATA_DIR/buurt_2019_wgs.shp" ]]; then
+    log "Boundary shapefiles not found at $BOUNDARY_DATA_DIR, skipping shapefile import"
+    return
+  fi
+
+  log "Importing shapefiles if needed..."
+  import_shapefile "buurt_2019_wgs" "buurt_2019_wgs"
+  import_shapefile "wijk_2019_wgs" "wijk_2019_wgs"
+  import_shapefile "gem_2019_wgs" "gem_2019_wgs"
+  import_shapefile "res_2019_wgs" "res_2019_wgs"
+  import_shapefile "prov_2019_wgs" "prov_2019_wgs"
+  import_shapefile "land_2019_wgs" "land_2019_wgs"
+}
+
 log "Starting database initialization..."
 
-# Ensure superuser password is up-to-date (important after migrations where hash format may change)
-log "Updating superuser password..."
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
-  ALTER ROLE $POSTGRES_USER WITH ENCRYPTED PASSWORD '$POSTGRES_PASSWORD';
+if [[ "$DB_INIT_MODE" == "create_or_update" ]]; then
+  log "Updating superuser password..."
+  psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+    ALTER ROLE $POSTGRES_USER WITH ENCRYPTED PASSWORD '$POSTGRES_PASSWORD';
 EOSQL
+fi
 
-# Create users and databases
-create_user_and_db "keycloak" "${POSTGRES_KEYCLOAK_PASSWORD}" "keycloak" ""
+if [[ "$ENABLE_KEYCLOAK_DB" == "true" ]]; then
+  create_user_and_db "keycloak" "${POSTGRES_KEYCLOAK_PASSWORD}" "keycloak" ""
+fi
+
 create_user_and_db "boundary_service" "${POSTGRES_BOUNDARY_SERVICE_PASSWORD}" "boundaries" ""
 create_user_and_db "drive" "${POSTGRES_DRIVE_PASSWORD}" "esdlrepo" "ALTER USER drive CREATEDB;"
 create_user_and_db "drive" "${POSTGRES_DRIVE_PASSWORD}" "esdl_geometries" "ALTER USER drive CREATEDB;"
@@ -85,22 +146,8 @@ psql --username "$POSTGRES_USER" --dbname esdl_geometries -c "CREATE EXTENSION I
 psql --username "$POSTGRES_USER" --dbname boundaries -c "CREATE EXTENSION IF NOT EXISTS postgis;"
 psql --username "$POSTGRES_USER" --dbname boundaries -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;"
 
-# Import boundary_service data - check if already imported
-if ! psql --username boundary_service --dbname boundaries -t -c "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'bu_wk_gm_es_pv_la_2019');" | grep -q t; then
-  log "Importing boundary_service data..."
-  psql --username "$POSTGRES_USER" --dbname boundaries -f /data/boundaries/bu_wk_gm_es_pv_la.sql
-else
-  log "Boundary service data already imported, skipping"
-fi
-
-# Import shapefiles
-log "Importing shapefiles if needed..."
-import_shapefile "buurt_2019_wgs" "buurt_2019_wgs"
-import_shapefile "wijk_2019_wgs" "wijk_2019_wgs"
-import_shapefile "gem_2019_wgs" "gem_2019_wgs"
-import_shapefile "res_2019_wgs" "res_2019_wgs"
-import_shapefile "prov_2019_wgs" "prov_2019_wgs"
-import_shapefile "land_2019_wgs" "land_2019_wgs"
+import_boundary_data
+import_boundary_shapefiles
 
 log "Database initialization completed successfully."
 

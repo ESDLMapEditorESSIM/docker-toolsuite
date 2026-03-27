@@ -273,6 +273,10 @@ services:
       - POSTGRES_DRIVE_PASSWORD=${POSTGRES_DRIVE_PASSWORD:-password}
       - POSTGRES_DATA_MANAGER_PASSWORD=${POSTGRES_DATA_MANAGER_PASSWORD:-password}
       - POSTGRES_ESSIM_PASSWORD=${POSTGRES_ESSIM_PASSWORD:-pgpassword}
+      - DB_INIT_MODE=create_or_update
+      - ENABLE_KEYCLOAK_DB=true
+      - IMPORT_BOUNDARY_DATA=true
+      - IMPORT_BOUNDARY_SHAPEFILES=true
     healthcheck:
       # Check postgres is ready AND either init script completed (.db_init_done) OR database was migrated (keycloak db exists)
       test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER} && (test -f /var/lib/postgresql/data/.db_init_done || psql -U $${POSTGRES_USER} -d $${POSTGRES_DB} -tAc \"SELECT 1 FROM pg_database WHERE datname='keycloak'\" | grep -q 1)"]
