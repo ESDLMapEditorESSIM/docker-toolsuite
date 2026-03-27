@@ -18,6 +18,14 @@ if [[ -n "${MAPEDITOR_CLIENT_SECRETS:-}" ]]; then
     --dry-run=client -o yaml | kubectl apply -f -
 fi
 
+if [[ -n "${RABBITMQ_USER:-}" && -n "${RABBITMQ_PASSWORD:-}" ]]; then
+  kubectl create secret generic rabbitmq-secret \
+    -n "${NAMESPACE}" \
+    --from-literal=user="${RABBITMQ_USER}" \
+    --from-literal=password="${RABBITMQ_PASSWORD}" \
+    --dry-run=client -o yaml | kubectl apply -f -
+fi
+
 if [[ -n "${CI_REGISTRY_USER_MAPEDITOR:-}" && -n "${CI_REGISTRY_PASS_MAPEDITOR:-}" ]]; then
   kubectl create secret docker-registry ciregistrykey-mapeditor \
     --docker-server="${CI_REGISTRY_SERVER}" \

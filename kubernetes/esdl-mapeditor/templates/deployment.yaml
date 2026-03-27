@@ -56,7 +56,7 @@ spec:
         {{- if eq (default "false" .Values.mapeditor.env.USE_RABBITMQ) "true" }}
         - name: wait-for-rabbitmq
           image: busybox:1.28
-          command: ['sh', '-c', 'until nc -zv rabbitmq 5672; do echo waiting for rabbitmq; sleep 2; done']
+          command: ['sh', '-c', 'until nc -zv {{ default "rabbitmq" .Values.mapeditor.env.RABBITMQ_HOST }} {{ default "5672" .Values.mapeditor.env.RABBITMQ_PORT }}; do echo waiting for rabbitmq; sleep 2; done']
         {{- end }}
       {{- if .Values.mapeditor.imagePullSecret }}
       imagePullSecrets:
