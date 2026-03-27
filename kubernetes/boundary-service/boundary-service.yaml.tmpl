@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boundary-service
+  namespace: {{ NAMESPACE }}
+  labels:
+    app: boundary-service
+spec:
+  selector:
+    matchLabels:
+      app: boundary-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: boundary-service
+      namespace: {{ NAMESPACE }}
+    spec:
+      containers:
+        - name: boundary-service
+          image: esdlmapeditoressim/boundary-service:latest
+          env:
+            - name: ENV
+              value: "prod"
+            - name: POSTGRES_HOST
+              value: "postgis"
+            - name: POSTGRES_DATABASE
+              value: boundaries
+            - name: POSTGRES_USER
+              value: boundary_service
+            - name: POSTGRES_PASSWORD
+              value: "{{ POSTGRES_BOUNDARY_SERVICE_PASSWORD }}"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 4002
+          resources:
+            requests:
+              memory: "800Mi"
+              cpu: "400m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boundary-service
+  namespace: {{ NAMESPACE }}
+spec:
+  selector:
+    app: boundary-service
+  ports:
+    - protocol: TCP
+      port: 4002
+      targetPort: 4002
+  type: ClusterIP

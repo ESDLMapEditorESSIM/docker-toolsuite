@@ -1,0 +1,43 @@
+image:
+  tag: "8.4.3"
+
+adminUser: admin
+adminPassword: admin
+
+env:
+  GF_SERVER_ROOT_URL: "https://essim-dashboard.example.com"
+  GF_SECURITY_ALLOW_EMBEDDING: "true"
+  GF_PANELS_DISABLE_SANITIZE_HTML: "true"
+
+persistence:
+  enabled: true
+  size: 10Gi
+  accessModes:
+    - ReadWriteOnce
+
+service:
+  type: ClusterIP
+  port: 3000
+
+ingress:
+  enabled: true
+  ingressClassName: traefik
+  hosts:
+    - essim-dashboard.example.com
+  tls:
+    - secretName: essim-dashboard-tls
+      hosts:
+        - essim-dashboard.example.com
+
+rbac:
+  create: true
+  pspEnabled: false
+  namespaced: true
+
+securityContext:
+  runAsUser: 472
+  runAsGroup: 472
+  fsGroup: 472
+
+initChownData:
+  enabled: false

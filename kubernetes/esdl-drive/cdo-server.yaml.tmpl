@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cdo-server
+  namespace: {{ NAMESPACE }}
+  labels:
+    app: cdo-server
+spec:
+  selector:
+    matchLabels:
+      app: cdo-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cdo-server
+      namespace: {{ NAMESPACE }}
+    spec:
+      containers:
+        - name: cdo-server
+          image: esdlmapeditoressim/cdo-server:latest
+          env:
+            - name: POSTGRESQL_HOST
+              value: "postgis"
+            - name: POSTGRESQL_PORT
+              value: "5432"
+            - name: POSTGRESQL_USER
+              value: "drive"
+            - name: POSTGRESQL_PASSWORD
+              value: "{{ POSTGRES_DRIVE_PASSWORD }}"
+            - name: POSTGRESQL_DATABASE
+              value: "esdlrepo"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 2036
+          resources:
+            requests:
+              memory: "800Mi"
+              cpu: "400m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cdo-server
+  namespace: {{ NAMESPACE }}
+spec:
+  selector:
+    app: cdo-server
+  ports:
+    - protocol: TCP
+      port: 2036
+      targetPort: 2036
+  type: ClusterIP

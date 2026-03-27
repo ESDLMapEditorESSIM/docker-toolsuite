@@ -1,0 +1,16 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: panel-service
+  namespace: {{ NAMESPACE }}
+spec:
+  entryPoints:
+    - websecure
+  routes:
+  - match: Host(`{{ PANEL_SERVICE_DNS }}{{ DOMAIN_EXTENSION }}`)
+    kind: Rule
+    services:
+    - name: panel-service
+      port: 5000
+  # make empty object, so that the default TLSStore puts our wildcard certificate here
+  tls: {}

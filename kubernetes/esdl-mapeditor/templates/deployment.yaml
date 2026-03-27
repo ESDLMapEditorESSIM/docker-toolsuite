@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: esdl-mapeditor
+  labels:
+    app: esdl-mapeditor
+spec:
+  selector:
+    matchLabels:
+      app: esdl-mapeditor
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: esdl-mapeditor
+    spec:
+      containers:
+        - name: esdl-mapeditor
+          image: "{{ .Values.mapeditor.image.repository }}:{{ .Values.mapeditor.image.tag }}"
+          envFrom:
+            - configMapRef:
+                name: mapeditor-env
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mapeditor.postgres.existingSecret.name }}
+                  key: {{ .Values.mapeditor.postgres.existingSecret.key }}
+            {{- if eq (default "false" .Values.mapeditor.env.USE_RABBITMQ) "true" }}
+            - name: RABBITMQ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-secret
+                  key: user
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-secret
+                  key: password
+            {{- end }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8111
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "400m"
+          volumeMounts:
+            - mountPath: "/usr/src/app/credentials"
+              name: mapeditor-credentials-secrets
+              readOnly: true
+      initContainers:
+        - name: wait-for-influxdb
+          image: busybox:1.28
+          command: ['sh', '-c', 'until nc -zv {{ .Values.global.influxdb.hostname }} {{ .Values.global.influxdb.port }}; do echo waiting for influxdb; sleep 2; done']
+        {{- if eq (default "false" .Values.mapeditor.env.USE_RABBITMQ) "true" }}
+        - name: wait-for-rabbitmq
+          image: busybox:1.28
+          command: ['sh', '-c', 'until nc -zv rabbitmq 5672; do echo waiting for rabbitmq; sleep 2; done']
+        {{- end }}
+      {{- if .Values.mapeditor.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.mapeditor.imagePullSecret }}
+      {{- end }}
+      volumes:
+        - name: mapeditor-credentials-secrets
+          secret:
+            secretName: mapeditor-oidc-client

@@ -1,0 +1,17 @@
+mongodb:
+  image:
+    repository: mongo
+    tag: "7"
+
+  storage:
+    size: 10Gi
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+  securityContext:
+    runAsUser: 999
+    runAsGroup: 999
+    fsGroup: 999

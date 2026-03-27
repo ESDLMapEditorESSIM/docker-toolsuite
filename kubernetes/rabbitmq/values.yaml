@@ -1,0 +1,9 @@
+service:
+  type: ClusterIP
+  amqpPort: 5672
+
+auth:
+  username: "user" # See also rabbitmq-secret
+  existingSecret: "rabbitmq-secret"
+  existingPasswordKey: "password"
+  existingErlangCookieKey: "erlang-cookie"

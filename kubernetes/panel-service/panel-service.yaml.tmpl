@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: panel-service
+  namespace: {{ NAMESPACE }}
+  labels:
+    app: panel-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: panel-service
+  template:
+    metadata:
+      labels:
+        app: panel-service
+    spec:
+      initContainers:
+        - name: setup-grafana
+          image: esdlmapeditoressim/panel-service:latest
+          command: ["python3", "setup_grafana.py"]
+          env:
+            - name: INTERNAL_GRAFANA_HOST
+              value: "grafana"
+            - name: INTERNAL_GRAFANA_PORT
+              value: "3000"
+            - name: GRAFANA_USER
+              value: "admin"
+            - name: GRAFANA_PASSWORD
+              value: "admin"
+            - name: ENV_FILE_PATH
+              value: "/config/panel_service.env"
+          volumeMounts:
+            - name: panel-config
+              mountPath: /config
+      containers:
+        - name: panel-service
+          image: esdlmapeditoressim/panel-service:latest
+          command: ["bash", "-c", "set -a; source /config/panel_service.env; set +a; exec gunicorn influxdbgraphs.api.main:app '-t 30' '-w 2' '-b :5000'"]
+          env:
+            - name: ENV
+              value: "prod"
+            - name: INTERNAL_GRAFANA_HOST
+              value: "grafana"
+            - name: INTERNAL_GRAFANA_PORT
+              value: "3000"
+            - name: EXTERNAL_GRAFANA_URL
+              value: "https://{{ ESSIM_DASHBOARD_DNS }}{{ DOMAIN_EXTENSION }}"
+          ports:
+            - containerPort: 5000
+          resources:
+            requests:
+              memory: "800Mi"
+              cpu: "400m"
+          volumeMounts:
+            - name: panel-config
+              mountPath: /config
+      volumes:
+        - name: panel-config
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: panel-service
+  namespace: {{ NAMESPACE }}
+spec:
+  selector:
+    app: panel-service
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+  type: ClusterIP

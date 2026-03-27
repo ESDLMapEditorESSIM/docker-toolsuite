@@ -1,0 +1,73 @@
+type: postgis
+
+version:
+  postgresql: "17"
+  postgis: "3.5"
+
+cluster:
+  imageName: "ghcr.io/cloudnative-pg/postgis:17-3.5-standard-trixie"
+
+  instances: 1  # Increase to 3 for HA in production
+
+  storage:
+    size: 20Gi
+    storageClass: ""
+
+  walStorage:
+    enabled: true
+    size: 4Gi
+    storageClass: ""
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+
+  superuserSecret: "cnpg-superuser-secret"
+
+  bootstrap:
+    initdb:
+      database: postgres
+      owner: postgres
+      postInitTemplateSQL:
+        - CREATE EXTENSION IF NOT EXISTS postgis;
+        - CREATE EXTENSION IF NOT EXISTS postgis_topology;
+
+  roles:
+    - name: keycloak
+      ensure: present
+      login: true
+      passwordSecret:
+        name: cnpg-role-keycloak
+    - name: boundary_service
+      ensure: present
+      login: true
+      passwordSecret:
+        name: cnpg-role-boundary-service
+    - name: drive
+      ensure: present
+      login: true
+      createdb: true
+      passwordSecret:
+        name: cnpg-role-drive
+    - name: data_manager
+      ensure: present
+      login: true
+      passwordSecret:
+        name: cnpg-role-data-manager
+    - name: essim
+      ensure: present
+      login: true
+      passwordSecret:
+        name: cnpg-role-essim
+    - name: mapeditor
+      ensure: present
+      login: true
+      passwordSecret:
+        name: cnpg-role-mapeditor
+
+  monitoring:
+    enabled: false

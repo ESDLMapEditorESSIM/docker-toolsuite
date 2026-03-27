@@ -1,0 +1,61 @@
+global:
+  domainExtension: example.com
+
+  oidc:
+    dns: idm.example.com
+
+  mongodb:
+    hostname: mongodb
+    port: 27017
+
+  influxdb:
+    hostname: influxdb
+    port: 8086
+
+mapeditor:
+  image:
+    repository: esdlmapeditoressim/esdl-mapeditor
+    tag: latest
+  imagePullSecret: ""
+
+  subdomain: mapeditor
+
+  postgres:
+    hostname: postgis
+    existingSecret:
+      name: mapeditor-secret
+      key: POSTGRES_MAPEDITOR_PASSWORD
+
+  oidc:
+    clientSecret: ""
+
+  env:
+    BAG_SERVICE_HOST: "null"
+    BAG_SERVICE_PORT: "null"
+    BOUNDARY_SERVICE_HOST: "boundary-service"
+    BOUNDARY_SERVICE_PORT: "4002"
+    EDR_URL: ""
+    ESDL_DRIVE_URL: "http://esdl-drive:9080"
+    EPS_WEB_HOST: ""
+    ESSIM_DATABASE_HOST: "{{ .Values.global.influxdb.hostname }}"
+    ESSIM_GRAFANA_URL: "http://grafana:3000"
+    ESSIM_INFLUX_URL: "http://{{ .Values.global.influxdb.hostname }}:{{ .Values.global.influxdb.port }}"
+    ESSIM_LOADFLOW_URL: ""
+    ESSIM_URL: "http://essim:8112"
+    FLASK_DEBUG: "false"
+    IBIS_SERVICE_HOST: "null"
+    IBIS_SERVICE_PORT: "null"
+    KEYCLOAK_VERSION_17_OR_HIGHER: "1"
+    MAPEDITOR_USE_GEVENT: "false"
+    OIDC_CLIENT_SECRETS: "credentials/client_secrets_opensource.json"
+    PANEL_SERVICE_EXTERNAL_URL: ""
+    PANEL_SERVICE_INTERNAL_URL: "http://panel-service:5000"
+    PANEL_SERVICE_PROFILE_DB_HOST: "{{ .Values.global.influxdb.hostname }}"
+    POSTGRES_HOST: "{{ .Values.mapeditor.postgres.hostname }}"
+    PROFILE_DATABASE_HOST: "{{ .Values.global.influxdb.hostname }}"
+    SETTINGS_STORAGE_HOST: "{{ .Values.global.mongodb.hostname }}"
+    SETTINGS_STORAGE_PORT: "{{ .Values.global.mongodb.port }}"
+    SETTINGS_TITLE: "ESDL MapEditor"
+    STATISTICS_SERVICE_HOST: "null"
+    STATISTICS_SERVICE_PORT: "null"
+    USER_LOGGING_HOST: "{{ .Values.global.influxdb.hostname }}"

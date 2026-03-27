@@ -1,0 +1,23 @@
+global:
+  domainExtension: example.com
+
+  oidc:
+    dns: idm.example.com
+
+# Override images, env vars, etc. per environment.
+# Only specify what differs from the chart defaults.
+# See esdl-mapeditor/values.yaml and essim/values.yaml for all options.
+
+# essim:
+#   image:
+#     repository: esdlmapeditoressim/essim
+#     tag: latest
+
+# mapeditor:
+#   image:
+#     repository: esdlmapeditoressim/esdl-mapeditor
+#     tag: latest
+#   oidc:
+#     clientSecret: ""
+#   env:
+#     SETTINGS_TITLE: "My deployment"

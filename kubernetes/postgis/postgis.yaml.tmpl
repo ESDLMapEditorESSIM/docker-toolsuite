@@ -1,0 +1,109 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgis-config
+  namespace: {{ NAMESPACE }}
+data:
+  POSTGRES_DB: postgresdb
+  POSTGRES_USER: postgresadmin
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgis-secret
+  namespace: {{ NAMESPACE }}
+type: Opaque
+stringData:
+  POSTGRES_PASSWORD: {{ POSTGRES_PASSWORD }}
+  POSTGRES_BOUNDARY_SERVICE_PASSWORD: {{ POSTGRES_BOUNDARY_SERVICE_PASSWORD }}
+  POSTGRES_DRIVE_PASSWORD: {{ POSTGRES_DRIVE_PASSWORD }}
+  POSTGRES_DATA_MANAGER_PASSWORD: {{ POSTGRES_DATA_MANAGER_PASSWORD }}
+  POSTGRES_ESSIM_PASSWORD: {{ POSTGRES_ESSIM_PASSWORD }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgis
+  namespace: {{ NAMESPACE }}
+spec:
+  selector:
+    app: postgis
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgis
+  namespace: {{ NAMESPACE }}
+  labels:
+    app: postgis
+spec:
+  serviceName: postgis
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgis
+  template:
+    metadata:
+      labels:
+        app: postgis
+    spec:
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+      containers:
+        - name: postgis
+          image: postgis/postgis:12-master
+          imagePullPolicy: Always
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: DB_INIT_MODE
+              value: create_only
+            - name: ENABLE_KEYCLOAK_DB
+              value: "false"
+            - name: IMPORT_BOUNDARY_DATA
+              value: "true"
+            - name: IMPORT_BOUNDARY_SHAPEFILES
+              value: "true"
+            - name: BOUNDARY_DATA_DIR
+              value: /data/boundaries
+          envFrom:
+            - configMapRef:
+                name: postgis-config
+            - secretRef:
+                name: postgis-secret
+          ports:
+            - containerPort: 5432
+          resources:
+            requests:
+              memory: "800Mi"
+              cpu: "400m"
+          volumeMounts:
+            - name: initdb
+              mountPath: "/docker-entrypoint-initdb.d/init-database.sh"
+              subPath: "init-database.sh"
+            - name: boundary-data
+              mountPath: /data/boundaries
+            - name: data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: initdb
+          configMap:
+            name: postgis-initdb
+        - name: boundary-data
+          configMap:
+            name: postgis-boundary-data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 25Gi

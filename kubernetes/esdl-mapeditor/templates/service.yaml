@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: esdl-mapeditor
+spec:
+  selector:
+    app: esdl-mapeditor
+  ports:
+    - protocol: TCP
+      port: 8111
+      targetPort: 8111
+  type: ClusterIP

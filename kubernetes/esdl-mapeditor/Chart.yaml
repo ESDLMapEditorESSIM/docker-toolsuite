@@ -1,0 +1,5 @@
+apiVersion: v2
+name: mapeditor
+description: Simple Helm chart for ESDL MapEditor
+version: 0.1.0
+appVersion: "1.0"

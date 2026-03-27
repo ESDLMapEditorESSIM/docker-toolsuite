@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: essim
+  labels:
+    app: essim
+spec:
+  selector:
+    matchLabels:
+      app: essim
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: essim
+    spec:
+      containers:
+        - name: essim
+          image: "{{ .Values.essim.image.repository }}:{{ .Values.essim.image.tag }}"
+          envFrom:
+            - configMapRef:
+                name: essim-env
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8112
+          readinessProbe:
+            httpGet:
+              path: /essim/simulation/status
+              port: 8112
+              httpHeaders:
+                - name: Custom-Header
+                  value: Awesome
+            initialDelaySeconds: 1
+            periodSeconds: 1
+      {{- if .Values.essim.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.essim.imagePullSecret }}
+      {{- end }}

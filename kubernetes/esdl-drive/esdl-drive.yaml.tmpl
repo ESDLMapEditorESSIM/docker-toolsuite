@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: esdl-drive
+  namespace: {{ NAMESPACE }}
+  labels:
+    app: esdl-drive
+spec:
+  selector:
+    matchLabels:
+      app: esdl-drive
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: esdl-drive
+      namespace: {{ NAMESPACE }}
+    spec:
+      containers:
+        - name: esdl-drive
+          image: esdlmapeditoressim/esdl-drive:latest
+          env:
+            - name: CDO_SERVER_HOST
+              value: "cdo-server.{{ NAMESPACE }}:2036"
+            - name: KEYCLOAK_REALM
+              value: "https://{{ KEYCLOAK_DNS }}{{ DOMAIN_EXTENSION }}/auth/realms/{{ KEYCLOAK_REALM }}"
+            - name: KEYCLOAK_REALM_EXTERNAL
+              value: "https://{{ KEYCLOAK_DNS }}{{ DOMAIN_EXTENSION }}/auth/realms/{{ KEYCLOAK_REALM }}"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9080
+          resources:
+            requests:
+              memory: "800Mi"
+              cpu: "400m"
+      imagePullSecrets:
+        - name: ciregistrykey-drive
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: esdl-drive
+  namespace: {{ NAMESPACE }}
+spec:
+  selector:
+    app: esdl-drive
+  ports:
+    - protocol: TCP
+      name: http
+      port: 9080
+      targetPort: 9080
+    - protocol: TCP
+      name: https
+      port: 9443
+      targetPort: 9443
+  type: ClusterIP

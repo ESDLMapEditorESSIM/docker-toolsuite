@@ -1,0 +1,38 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: esdl-mapeditor
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`{{ include "mapeditor.host" . }}`)
+      kind: Rule
+      services:
+        - name: esdl-mapeditor
+          port: 8111
+    - match: Host(`{{ include "mapeditor.host" . }}`) && PathPrefix('/socket.io/')
+      kind: Rule
+      services:
+        - name: esdl-mapeditor
+          port: 8111
+      middlewares:
+        - name: websocket-headers
+  tls:
+    secretName: mapeditor-tls-secret
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: mapeditor-ingress-http-redirect
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`{{ include "mapeditor.host" . }}`)
+      kind: Rule
+      services:
+        - name: esdl-mapeditor
+          port: 8111
+      middlewares:
+        - name: website-http-to-https

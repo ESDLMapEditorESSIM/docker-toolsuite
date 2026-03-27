@@ -1,0 +1,3 @@
+# Per-environment secrets (share out-of-band, never commit)
+envs/*/secrets.sh
+cnpg/secrets.sh
