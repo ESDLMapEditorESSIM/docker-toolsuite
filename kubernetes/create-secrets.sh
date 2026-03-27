@@ -20,7 +20,7 @@ echo "Creating/updating deploy-secrets in namespace: ${NAMESPACE}"
 
 kubectl create secret generic deploy-secrets \
   -n "${NAMESPACE}" \
-  --from-literal=CI_REGISTRY_SERVER="${CI_REGISTRY_SERVER}" \
+  --from-literal=CI_REGISTRY_SERVER="${CI_REGISTRY_SERVER:-}" \
   --from-literal=CI_REGISTRY_USER_ESSIM="${CI_REGISTRY_USER_ESSIM:-}" \
   --from-literal=CI_REGISTRY_PASS_ESSIM="${CI_REGISTRY_PASS_ESSIM:-}" \
   --from-literal=CI_REGISTRY_USER_MAPEDITOR="${CI_REGISTRY_USER_MAPEDITOR:-}" \

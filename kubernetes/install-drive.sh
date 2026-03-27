@@ -21,6 +21,7 @@ gen_sed cdo-server "$SCRIPT_DIR/esdl-drive/cdo-server.yaml.tmpl" \
 
 gen_sed esdl-drive "$SCRIPT_DIR/esdl-drive/esdl-drive.yaml.tmpl" \
   -e "s/{{ NAMESPACE }}/${NAMESPACE}/g" \
+  -e "s/{{ ESDL_DRIVE_KEYCLOAK_CLIENT_SECRET }}/${ESDL_DRIVE_KEYCLOAK_CLIENT_SECRET}/g" \
   -e "s/{{ KEYCLOAK_DNS }}/${KEYCLOAK_DNS:-idm}/g" \
   -e "s/{{ KEYCLOAK_REALM }}/${IDM_REALM}/g" \
   -e "s/{{ DOMAIN_EXTENSION }}/${DOMAIN_EXTENSION}/g"

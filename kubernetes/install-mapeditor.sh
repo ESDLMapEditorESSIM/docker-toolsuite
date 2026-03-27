@@ -18,10 +18,10 @@ if [[ -n "${MAPEDITOR_CLIENT_SECRETS:-}" ]]; then
     --dry-run=client -o yaml | kubectl apply -f -
 fi
 
-if [[ -n "${RABBITMQ_USER:-}" && -n "${RABBITMQ_PASSWORD:-}" ]]; then
+if [[ -n "${RABBITMQ_PASSWORD:-}" ]]; then
   kubectl create secret generic rabbitmq-secret \
     -n "${NAMESPACE}" \
-    --from-literal=user="${RABBITMQ_USER}" \
+    --from-literal=user="${RABBITMQ_USER:-user}" \
     --from-literal=password="${RABBITMQ_PASSWORD}" \
     --dry-run=client -o yaml | kubectl apply -f -
 fi

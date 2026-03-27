@@ -1,0 +1,59 @@
+global:
+  domainExtension: example.com
+
+  mongodb:
+    hostname: geis
+    port: 27018
+
+  influxdb:
+    hostname: geis
+    port: 8086
+
+mapeditor:
+  image:
+    repository: esdlmapeditoressim/esdl-mapeditor
+    tag: latest
+  imagePullSecret: ""
+
+  postgres:
+    existingSecret:
+      name: mapeditor-secret
+      key: POSTGRES_MAPEDITOR_PASSWORD
+
+  subdomain: mapeditor-beta
+
+  env:
+    BAG_SERVICE_HOST: "geis"
+    BAG_SERVICE_PORT: "4012"
+    BOUNDARY_SERVICE_HOST: "geis"
+    BOUNDARY_SERVICE_PORT: "4002"
+    EDR_URL: "https://drive.example.com"
+    ESDL_DRIVE_URL: "https://drive.example.com"
+    EPS_WEB_HOST: ""
+    ESSIM_DATABASE_HOST: "geis"
+    ESSIM_GRAFANA_URL: "https://essim-dashboard.example.com"
+    ESSIM_INFLUX_URL: "http://{{ .Values.global.influxdb.hostname }}:{{ .Values.global.influxdb.port }}"
+    ESSIM_LOADFLOW_URL: ""
+    ESSIM_URL: "http://essim.mapeditor:8112"
+    FLASK_DEBUG: "False"
+    IBIS_SERVICE_HOST: ""
+    IBIS_SERVICE_PORT: ""
+    KEYCLOAK_VERSION_17_OR_HIGHER: "1"
+    MAPEDITOR_USE_GEVENT: "False"
+    OIDC_CLIENT_SECRETS: "credentials/client_secrets_opensource.json"
+    PANEL_SERVICE_EXTERNAL_URL: "https://panel-service.example.com"
+    PANEL_SERVICE_INTERNAL_URL: "https://panel-service.example.com"
+    PANEL_SERVICE_PROFILE_DB_HOST: "geis"
+    POSTGRES_HOST: "geis"
+    PROFILE_DATABASE_HOST: "geis"
+    SETTINGS_STORAGE_HOST: "{{ .Values.global.mongodb.hostname }}"
+    SETTINGS_STORAGE_PORT: "{{ .Values.global.mongodb.port }}"
+    SETTINGS_TITLE: "Example deployment"
+    STATISTICS_SERVICE_HOST: ""
+    STATISTICS_SERVICE_PORT: ""
+    USER_LOGGING_HOST: "geis"
+    USE_RABBITMQ: 'true'
+    RABBITMQ_HOST: "rabbitmq.mapeditor"
+    RABBITMQ_PORT: "5672"
+    MAPEDITOR_RABBITMQ_QUEUE: "mapeditor-beta"
+    MAPEDITOR_RABBITMQ_EXCHANGE: "mapeditor.topic"

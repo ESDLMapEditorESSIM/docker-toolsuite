@@ -12,6 +12,7 @@ helm repo update
 helm upgrade --install grafana \
   -n "${NAMESPACE}" \
   -f "${VALUES_DIR}/values-grafana.yaml" \
+  --set-string env.GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET="${GRAFANA_OAUTH_CLIENT_SECRET:-}" \
   grafana/grafana
 
 if [[ -n "${CI_REGISTRY_USER_ESSIM:-}" && -n "${CI_REGISTRY_PASS_ESSIM:-}" ]]; then
