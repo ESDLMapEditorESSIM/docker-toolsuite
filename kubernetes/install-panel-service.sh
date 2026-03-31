@@ -6,9 +6,9 @@ load_env "$1"
 
 log "Installing panel-service in $NAMESPACE"
 
-if [[ -n "${CI_REGISTRY_USER_PANEL_SERVICE:-}" && -n "${CI_REGISTRY_PASS_PANEL_SERVICE:-}" ]]; then
+if [[ -n "${CI_REGISTRY_SERVER:-}" && -n "${CI_REGISTRY_USER_PANEL_SERVICE:-}" && -n "${CI_REGISTRY_PASS_PANEL_SERVICE:-}" ]]; then
   kubectl create secret docker-registry ciregistrykey-panel-service \
-    --docker-server="${CI_REGISTRY_SERVER}" \
+    --docker-server="${CI_REGISTRY_SERVER:-}" \
     --docker-username="${CI_REGISTRY_USER_PANEL_SERVICE}" \
     --docker-password="${CI_REGISTRY_PASS_PANEL_SERVICE}" \
     -n "${NAMESPACE}" \

@@ -6,9 +6,9 @@ load_env "$1"
 
 log "Installing ESDL Drive + CDO server in $NAMESPACE"
 
-if [[ -n "${CI_REGISTRY_USER_DRIVE:-}" && -n "${CI_REGISTRY_PASS_DRIVE:-}" ]]; then
+if [[ -n "${CI_REGISTRY_SERVER:-}" && -n "${CI_REGISTRY_USER_DRIVE:-}" && -n "${CI_REGISTRY_PASS_DRIVE:-}" ]]; then
   kubectl create secret docker-registry ciregistrykey-drive \
-    --docker-server="${CI_REGISTRY_SERVER}" \
+    --docker-server="${CI_REGISTRY_SERVER:-}" \
     --docker-username="${CI_REGISTRY_USER_DRIVE}" \
     --docker-password="${CI_REGISTRY_PASS_DRIVE}" \
     -n "${NAMESPACE}" \

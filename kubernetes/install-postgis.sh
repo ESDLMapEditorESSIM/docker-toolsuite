@@ -11,11 +11,6 @@ kubectl create configmap postgis-initdb \
   --from-file "$SCRIPT_DIR/../BaseInfrastructure/postgres/init-database.sh" \
   --dry-run=client -o yaml | kubectl apply -f -
 
-kubectl create configmap postgis-boundary-data \
-  --namespace="${NAMESPACE}" \
-  --from-file="$SCRIPT_DIR/postgis/data/boundaries" \
-  --dry-run=client -o yaml | kubectl apply -f -
-
 gen_sed postgis "$SCRIPT_DIR/postgis/postgis.yaml.tmpl" \
   -e "s/{{ NAMESPACE }}/${NAMESPACE}/g" \
   -e "s/{{ POSTGRES_PASSWORD }}/${POSTGRES_PASSWORD}/g" \

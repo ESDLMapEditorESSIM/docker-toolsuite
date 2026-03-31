@@ -22,13 +22,13 @@ spec:
           env:
             - name: ENV
               value: "prod"
-            - name: POSTGRES_HOST
+            - name: BOUNDARY_SERVICE_DATABASE_HOST
               value: "postgis"
-            - name: POSTGRES_DATABASE
+            - name: BOUNDARY_SERVICE_DATABASE_NAME
               value: boundaries
-            - name: POSTGRES_USER
+            - name: BOUNDARY_SERVICE_DATABASE_USER
               value: boundary_service
-            - name: POSTGRES_PASSWORD
+            - name: BOUNDARY_SERVICE_DATABASE_PASSWORD
               value: "{{ POSTGRES_BOUNDARY_SERVICE_PASSWORD }}"
           imagePullPolicy: Always
           ports:

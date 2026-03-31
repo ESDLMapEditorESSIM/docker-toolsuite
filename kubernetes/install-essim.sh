@@ -15,9 +15,9 @@ helm upgrade --install grafana \
   --set-string env.GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET="${GRAFANA_OAUTH_CLIENT_SECRET:-}" \
   grafana/grafana
 
-if [[ -n "${CI_REGISTRY_USER_ESSIM:-}" && -n "${CI_REGISTRY_PASS_ESSIM:-}" ]]; then
+if [[ -n "${CI_REGISTRY_SERVER:-}" && -n "${CI_REGISTRY_USER_ESSIM:-}" && -n "${CI_REGISTRY_PASS_ESSIM:-}" ]]; then
   kubectl create secret docker-registry ciregistrykey-essim \
-    --docker-server="${CI_REGISTRY_SERVER}" \
+    --docker-server="${CI_REGISTRY_SERVER:-}" \
     --docker-username="${CI_REGISTRY_USER_ESSIM}" \
     --docker-password="${CI_REGISTRY_PASS_ESSIM}" \
     -n "${NAMESPACE}" \

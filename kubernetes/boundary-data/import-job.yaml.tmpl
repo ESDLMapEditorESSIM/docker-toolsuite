@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: import-boundary-data
+  namespace: {{ NAMESPACE }}
+spec:
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: import
+          image: postgis/postgis:{{ POSTGIS_IMAGE_TAG }}
+          command: ["/bin/bash", "/scripts/import-boundary-data.sh"]
+          env:
+            - name: POSTGRES_HOST
+              value: "{{ POSTGRES_HOST }}"
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_USER
+              value: "postgresadmin"
+          envFrom:
+            - secretRef:
+                name: postgis-secret
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+      volumes:
+        - name: scripts
+          configMap:
+            name: boundary-data-import-script
+            defaultMode: 0755

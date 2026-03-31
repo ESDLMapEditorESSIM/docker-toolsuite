@@ -26,9 +26,9 @@ if [[ -n "${RABBITMQ_PASSWORD:-}" ]]; then
     --dry-run=client -o yaml | kubectl apply -f -
 fi
 
-if [[ -n "${CI_REGISTRY_USER_MAPEDITOR:-}" && -n "${CI_REGISTRY_PASS_MAPEDITOR:-}" ]]; then
+if [[ -n "${CI_REGISTRY_SERVER:-}" && -n "${CI_REGISTRY_USER_MAPEDITOR:-}" && -n "${CI_REGISTRY_PASS_MAPEDITOR:-}" ]]; then
   kubectl create secret docker-registry ciregistrykey-mapeditor \
-    --docker-server="${CI_REGISTRY_SERVER}" \
+    --docker-server="${CI_REGISTRY_SERVER:-}" \
     --docker-username="${CI_REGISTRY_USER_MAPEDITOR}" \
     --docker-password="${CI_REGISTRY_PASS_MAPEDITOR}" \
     -n "${NAMESPACE}" \
