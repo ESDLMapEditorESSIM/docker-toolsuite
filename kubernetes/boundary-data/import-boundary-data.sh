@@ -1,7 +1,7 @@
 #!/bin/bash
 # Downloads boundary data from the docker-toolsuite GitHub repo and imports it
 # into the boundaries database. Safe to re-run, skips already-imported tables.
-set -e
+set -euo pipefail
 
 GITHUB_BASE="https://raw.githubusercontent.com/ESDLMapEditorESSIM/docker-toolsuite/main/Data/Boundaries"
 DATA_DIR="/data/boundaries"
@@ -33,9 +33,8 @@ for f in "${files[@]}"; do
   fi
 done
 
-export PGPASSWORD="${POSTGRES_PASSWORD}"
-
 log "Waiting for PostgreSQL to be ready..."
+export PGPASSWORD="${POSTGRES_PASSWORD}"
 until pg_isready -h "$PGHOST" -p "$PGPORT" -U "$POSTGRES_USER"; do
   sleep 2
 done
@@ -44,7 +43,7 @@ import_shapefile() {
   local shapefile=$1
   local table_name=$2
   local table_exists
-  PGPASSWORD="${POSTGRES_BOUNDARY_SERVICE_PASSWORD}" \
+  export PGPASSWORD="${POSTGRES_BOUNDARY_SERVICE_PASSWORD}"
   table_exists=$(psql -h "$PGHOST" -p "$PGPORT" -U boundary_service -d boundaries -t -c \
     "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '$table_name');")
   if [[ $table_exists =~ t ]]; then
@@ -52,15 +51,20 @@ import_shapefile() {
   else
     log "Importing $shapefile..."
     shp2pgsql -s 4326 "$DATA_DIR/$shapefile.shp" "public.$table_name" | \
-      PGPASSWORD="${POSTGRES_BOUNDARY_SERVICE_PASSWORD}" \
       psql -h "$PGHOST" -p "$PGPORT" -U boundary_service -d boundaries
   fi
+  export PGPASSWORD="${POSTGRES_PASSWORD}"
 }
 
 log "Importing boundary SQL data..."
 if ! psql -h "$PGHOST" -p "$PGPORT" -U "$POSTGRES_USER" -d boundaries -t -c \
   "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'bu_wk_gm_es_pv_la_2019');" | grep -q t; then
-  psql -h "$PGHOST" -p "$PGPORT" -U "$POSTGRES_USER" -d boundaries -f "$DATA_DIR/bu_wk_gm_es_pv_la.sql"
+  # Run schema SQL but skip the COPY line (server-side COPY won't work from a remote client)
+  grep -v '^COPY' "$DATA_DIR/bu_wk_gm_es_pv_la.sql" | \
+    psql -h "$PGHOST" -p "$PGPORT" -U "$POSTGRES_USER" -d boundaries
+  # Load CSV using client-side \copy
+  psql -h "$PGHOST" -p "$PGPORT" -U "$POSTGRES_USER" -d boundaries -c \
+    "\copy bu_wk_gm_es_pv_la_2019(bu_code,bu_naam,wk_code,wk_naam,gm_code,gm_naam,pv_code,pv_naam,es_code,es_naam,la_code,la_naam) FROM '$DATA_DIR/BUWKGMPVESLA.csv' DELIMITER ';' CSV HEADER"
 else
   log "Boundary SQL data already imported, skipping"
 fi
