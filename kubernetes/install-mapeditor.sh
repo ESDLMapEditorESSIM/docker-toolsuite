@@ -19,10 +19,15 @@ if [[ -n "${MAPEDITOR_CLIENT_SECRETS:-}" ]]; then
 fi
 
 if [[ -n "${RABBITMQ_PASSWORD:-}" ]]; then
+  EXISTING_COOKIE=$(kubectl get secret rabbitmq-secret -n "${NAMESPACE}" \
+    -o jsonpath='{.data.erlang-cookie}' 2>/dev/null | base64 -d || true)
+  RABBITMQ_ERLANG_COOKIE="${RABBITMQ_ERLANG_COOKIE:-${EXISTING_COOKIE:-$(head -c 32 /dev/urandom | base64 | tr -d '/+=' | head -c 32)}}"
+
   kubectl create secret generic rabbitmq-secret \
     -n "${NAMESPACE}" \
     --from-literal=user="${RABBITMQ_USER:-user}" \
     --from-literal=password="${RABBITMQ_PASSWORD}" \
+    --from-literal=erlang-cookie="${RABBITMQ_ERLANG_COOKIE}" \
     --dry-run=client -o yaml | kubectl apply -f -
 fi
 
