@@ -156,7 +156,7 @@ docker-compose up
 
 > Note: use `docker-compose up -d` to start the services in the background.
 
-Wait for all services to become healthy. The first startup takes a few minutes as databases are initialized and boundary data is imported.
+Wait for all services to become healthy. The first startup takes a few minutes as databases are initialized and boundary data is imported. Keycloak imports the `esdl-mapeditor` realm automatically during startup; you do not need to run separate `docker cp` or `docker exec` import commands. Keycloak imports the `esdl-mapeditor` realm automatically during startup; you do not need to run separate `docker cp` or `docker exec` import commands.
 
 ### Step 2. Creating user accounts
 
