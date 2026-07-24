@@ -1,6 +1,7 @@
-# =====================================================================================================================
-#   Script to upload profile data from CSV files
-# =====================================================================================================================
+"""
+Upload profile data from CSV files.
+"""
+
 import argparse
 import codecs
 import csv
@@ -19,9 +20,12 @@ DEFAULT_DB_USER = "admin"
 DEFAULT_DB_PASSWORD = "admin"
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
+    """Parse command line options."""
     parser = argparse.ArgumentParser(description="Upload profile CSV files to InfluxDB.")
-    parser.add_argument("files", nargs="*", help="CSV files to upload. Defaults to all *.csv files in the current directory.")
+    parser.add_argument(
+        "files", nargs="*", help="CSV files to upload. Defaults to all *.csv files in the current directory."
+    )
     parser.add_argument("--host", default=DEFAULT_DB_HOST, help="InfluxDB host.")
     parser.add_argument("--port", default=DEFAULT_DB_PORT, type=int, help="InfluxDB port.")
     parser.add_argument("--database", default=DEFAULT_DB_NAME, help="InfluxDB database.")
@@ -33,7 +37,8 @@ def parse_args():
     return parser.parse_args()
 
 
-def connect_database(args):
+def connect_database(args: argparse.Namespace) -> InfluxDBClient:
+    """Connect to InfluxDB and create the target database when needed."""
     client = InfluxDBClient(
         host=args.host,
         port=args.port,
@@ -49,7 +54,8 @@ def connect_database(args):
     return client
 
 
-def format_datetime(dt):
+def format_datetime(dt: str) -> str:
+    """Convert docker-toolsuite profile timestamps to InfluxDB timestamps."""
     date, time = dt.split(" ")
     day, month, year = date.split("-")
     ndate = year + "-" + month + "-" + day
@@ -57,7 +63,8 @@ def format_datetime(dt):
     return ndate + "T" + ntime
 
 
-def process_profiles_csv(client, file_path, database, drop_measurement=False):
+def process_profiles_csv(client, file_path: str, database: str, drop_measurement: bool = False) -> None:
+    """Upload one profile CSV as an InfluxDB measurement."""
     path_parts = os.path.split(file_path)
     file_name = path_parts[-1]
     measurement = os.path.splitext(file_name)[0]
@@ -80,16 +87,19 @@ def process_profiles_csv(client, file_path, database, drop_measurement=False):
                 if row[i]:
                     fields[column_names[i]] = locale.atof(row[i])
 
-            json_body.append({
-                "measurement": measurement,
-                "time": format_datetime(row[0]),
-                "fields": fields,
-            })
+            json_body.append(
+                {
+                    "measurement": measurement,
+                    "time": format_datetime(row[0]),
+                    "fields": fields,
+                }
+            )
 
         client.write_points(points=json_body, database=database, batch_size=100)
 
 
-def get_files(files):
+def get_files(files: list[str]) -> list[str]:
+    """Return explicit CSV files or all CSV files in the current directory."""
     if files:
         return files
     return glob.glob("./*.csv")
