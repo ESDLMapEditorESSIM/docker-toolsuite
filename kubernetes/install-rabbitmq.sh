@@ -30,5 +30,6 @@ kubectl create secret generic rabbitmq-secret \
 
 helm upgrade --install rabbitmq \
   -n "${NAMESPACE}" \
+  --version "${RABBITMQ_CHART_VERSION:-}" \
   -f "$RABBITMQ_VALUES_FILE" \
   oci://registry-1.docker.io/cloudpirates/rabbitmq
