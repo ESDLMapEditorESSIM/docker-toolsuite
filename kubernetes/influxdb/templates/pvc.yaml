@@ -1,0 +1,17 @@
+{{- if not .Values.influxdb.persistence.existingClaim }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: influxdb-storage
+  labels:
+    app: influxdb-storage
+  annotations:
+    helm.sh/resource-policy: keep
+spec:
+  storageClassName: {{ .Values.influxdb.persistence.storageClass | quote }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.influxdb.persistence.size | quote }}
+{{- end }}

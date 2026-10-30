@@ -5,6 +5,8 @@ metadata:
   labels:
     app: esdl-mapeditor
 spec:
+  strategy:
+    type: {{ default "RollingUpdate" .Values.mapeditor.deploymentStrategy }}
   selector:
     matchLabels:
       app: esdl-mapeditor

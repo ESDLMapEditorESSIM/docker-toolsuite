@@ -8,3 +8,5 @@ if [[ -z "${1:-}" ]]; then
 fi
 
 "$1/kubernetes/install-mapeditor.sh" envs/my-custom-mapeditor/.env
+kubectl apply -f envs/my-custom-mapeditor/certificates.yaml \
+  -f envs/my-custom-mapeditor/ingressroutes.yaml

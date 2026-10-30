@@ -23,11 +23,14 @@ spec:
             - name: CDO_SERVER_HOST
               value: "cdo-server.{{ NAMESPACE }}:2036"
             - name: KEYCLOAK_CLIENT_SECRET
-              value: "{{ ESDL_DRIVE_KEYCLOAK_CLIENT_SECRET }}"
+              valueFrom:
+                secretKeyRef:
+                  name: esdl-drive-secrets
+                  key: KEYCLOAK_CLIENT_SECRET
             - name: KEYCLOAK_REALM
-              value: "https://{{ KEYCLOAK_DNS }}{{ DOMAIN_EXTENSION }}/auth/realms/{{ KEYCLOAK_REALM }}"
+              value: "{{ IDM_BASE_URL }}"
             - name: KEYCLOAK_REALM_EXTERNAL
-              value: "https://{{ KEYCLOAK_DNS }}{{ DOMAIN_EXTENSION }}/auth/realms/{{ KEYCLOAK_REALM }}"
+              value: "{{ IDM_BASE_URL }}"
           imagePullPolicy: Always
           ports:
             - containerPort: 9080

@@ -6,6 +6,14 @@ load_env "$1"
 
 log "Installing boundary-service in $NAMESPACE"
 
-gen_sed boundary-service "$SCRIPT_DIR/boundary-service/boundary-service.yaml.tmpl" \
-  -e "s/{{ NAMESPACE }}/${NAMESPACE}/g" \
-  -e "s/{{ POSTGRES_BOUNDARY_SERVICE_PASSWORD }}/${POSTGRES_BOUNDARY_SERVICE_PASSWORD}/g"
+if [[ -n "${POSTGRES_BOUNDARY_SERVICE_PASSWORD:-}" ]]; then
+  kubectl create secret generic boundaryservice-postgres \
+    --namespace "$NAMESPACE" \
+    --from-literal=POSTGRES_PASSWORD="$POSTGRES_BOUNDARY_SERVICE_PASSWORD" \
+    --dry-run=client -o yaml | kubectl apply -f -
+fi
+
+helm upgrade --install boundary-service "$SCRIPT_DIR/boundary-service" \
+  -n "$NAMESPACE" \
+  -f "$VALUES_DIR/values.yaml" \
+  --wait

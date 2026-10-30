@@ -18,6 +18,27 @@ load_env() {
   [[ -n "${SECRETS_FILE:-}" && -f "$SECRETS_FILE" ]] && source "$SECRETS_FILE"
 }
 
+# Kubernetes services use the same public realm URL.
+configure_idm() {
+  : "${IDM_BASE_URL:?IDM_BASE_URL is required}"
+  IDM_BASE_URL="${IDM_BASE_URL%/}"
+  IDM_OIDC_PREFIX="${IDM_BASE_URL}/protocol/openid-connect"
+}
+
+# Read client settings on stdin, retaining credentials and application-specific fields.
+oidc_client_secrets() {
+  configure_idm
+  jq --arg issuer "$IDM_BASE_URL" --arg prefix "$IDM_OIDC_PREFIX" '
+    .web += {
+      issuer: $issuer,
+      auth_uri: ($prefix + "/auth"),
+      token_uri: ($prefix + "/token"),
+      userinfo_uri: ($prefix + "/userinfo"),
+      token_introspection_uri: ($prefix + "/token/introspect")
+    }
+  '
+}
+
 # gen_sed <name> <template> <sed-args...>
 gen_sed() {
   local name="$1" tmpl="$2"

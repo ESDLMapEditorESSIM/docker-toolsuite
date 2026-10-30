@@ -5,6 +5,11 @@ source "$SCRIPT_DIR/lib.sh"
 load_env "$1"
 
 log "Installing RabbitMQ in $NAMESPACE"
+RABBITMQ_VALUES_FILE="${RABBITMQ_VALUES_FILE:-$SCRIPT_DIR/rabbitmq/values.yaml}"
+if [[ ! -f "$RABBITMQ_VALUES_FILE" ]]; then
+  echo "RabbitMQ values file not found: $RABBITMQ_VALUES_FILE"
+  exit 1
+fi
 
 # Auto-generate Erlang cookie if not set
 RABBITMQ_ERLANG_COOKIE="${RABBITMQ_ERLANG_COOKIE:-$(head -c 32 /dev/urandom | base64 | tr -d '/+=' | head -c 32)}"
@@ -25,5 +30,5 @@ kubectl create secret generic rabbitmq-secret \
 
 helm upgrade --install rabbitmq \
   -n "${NAMESPACE}" \
-  -f "$SCRIPT_DIR/rabbitmq/values.yaml" \
+  -f "$RABBITMQ_VALUES_FILE" \
   oci://registry-1.docker.io/cloudpirates/rabbitmq

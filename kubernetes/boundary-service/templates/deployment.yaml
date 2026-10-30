@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boundary-service
+  labels:
+    app: boundary-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: boundary-service
+  template:
+    metadata:
+      labels:
+        app: boundary-service
+    spec:
+      containers:
+        - name: boundary-service
+          image: {{ printf "%s:%s" .Values.boundaryService.image.repository .Values.boundaryService.image.tag | quote }}
+          imagePullPolicy: Always
+          env:
+            - name: ENV
+              value: prod
+            - name: FLASK_SERVER_PORT
+              value: {{ .Values.boundaryService.port | quote }}
+            - name: BOUNDARY_SERVICE_DATABASE_HOST
+              value: {{ .Values.boundaryService.postgres.hostname | quote }}
+            - name: BOUNDARY_SERVICE_DATABASE_PORT
+              value: {{ .Values.boundaryService.postgres.port | quote }}
+            - name: BOUNDARY_SERVICE_DATABASE_NAME
+              value: {{ .Values.boundaryService.postgres.database | quote }}
+            - name: BOUNDARY_SERVICE_DATABASE_USER
+              value: {{ .Values.boundaryService.postgres.user | quote }}
+            - name: BOUNDARY_SERVICE_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.boundaryService.postgres.existingSecret.name | quote }}
+                  key: {{ .Values.boundaryService.postgres.existingSecret.key | quote }}
+            - name: POSTGRES_HOST
+              value: {{ .Values.boundaryService.postgres.hostname | quote }}
+            - name: POSTGRES_PORT
+              value: {{ .Values.boundaryService.postgres.port | quote }}
+            - name: POSTGRES_DATABASE
+              value: {{ .Values.boundaryService.postgres.database | quote }}
+            - name: POSTGRES_USER
+              value: {{ .Values.boundaryService.postgres.user | quote }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.boundaryService.postgres.existingSecret.name | quote }}
+                  key: {{ .Values.boundaryService.postgres.existingSecret.key | quote }}
+          ports:
+            - containerPort: {{ .Values.boundaryService.port }}
+          resources:
+            requests:
+              cpu: 400m
+              memory: 800Mi
+      {{- if .Values.boundaryService.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.boundaryService.imagePullSecret | quote }}
+      {{- end }}

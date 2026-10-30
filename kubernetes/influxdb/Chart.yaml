@@ -1,0 +1,5 @@
+apiVersion: v2
+name: influxdb
+description: Simple Helm chart for InfluxDB
+version: 0.1.0
+appVersion: "1.7"

@@ -2,5 +2,6 @@
 ESDLMapEditor/panel_service.env
 credentials
 .env
+/docker-compose.override.yml
 GeoLite2-Country.mmdb
 pg_backup/

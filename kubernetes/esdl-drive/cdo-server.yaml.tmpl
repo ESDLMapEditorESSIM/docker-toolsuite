@@ -27,7 +27,10 @@ spec:
             - name: POSTGRESQL_USER
               value: "drive"
             - name: POSTGRESQL_PASSWORD
-              value: "{{ POSTGRES_DRIVE_PASSWORD }}"
+              valueFrom:
+                secretKeyRef:
+                  name: esdl-drive-secrets
+                  key: POSTGRESQL_PASSWORD
             - name: POSTGRESQL_DATABASE
               value: "esdlrepo"
           imagePullPolicy: Always

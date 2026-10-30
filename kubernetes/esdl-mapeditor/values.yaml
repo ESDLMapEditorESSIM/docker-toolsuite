@@ -1,6 +1,4 @@
 global:
-  domainExtension: example.com
-
   oidc:
     dns: idm.example.com
 
@@ -17,9 +15,6 @@ mapeditor:
     repository: esdlmapeditoressim/esdl-mapeditor
     tag: latest
   imagePullSecret: ""
-
-  subdomain: mapeditor
-
   postgres:
     hostname: postgis
     existingSecret:

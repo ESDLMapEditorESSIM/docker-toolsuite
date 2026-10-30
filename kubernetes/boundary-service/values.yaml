@@ -1,0 +1,15 @@
+boundaryService:
+  image:
+    repository: esdlmapeditoressim/boundary-service
+    tag: latest
+  imagePullSecret: ""
+  port: 4002
+
+  postgres:
+    hostname: postgis
+    port: 5432
+    database: boundaries
+    user: boundary_service
+    existingSecret:
+      name: boundaryservice-postgres
+      key: POSTGRES_PASSWORD

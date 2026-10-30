@@ -245,6 +245,10 @@ services:
       - INFLUXDB_WRITE_USER_PASSWORD=panelservice
     volumes:
       - influxdb_storage:/var/lib/influxdb
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
     healthcheck:
       test: ["CMD", "curl", "-f", "http://influxdb:8086/ping"]
       interval: 10s

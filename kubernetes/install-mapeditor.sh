@@ -4,6 +4,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib.sh"
 load_env "$1"
 
+if [[ -n "${MAPEDITOR_CLIENT_SECRETS:-}" ]]; then
+  MAPEDITOR_CLIENT_SECRETS=$(printf '%s' "$MAPEDITOR_CLIENT_SECRETS" | oidc_client_secrets)
+fi
+
 log "Installing MapEditor in $NAMESPACE"
 
 kubectl create secret generic mapeditor-secret \

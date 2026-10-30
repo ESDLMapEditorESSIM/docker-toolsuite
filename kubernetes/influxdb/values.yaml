@@ -1,0 +1,26 @@
+influxdb:
+  image:
+    repository: influxdb
+    tag: "1.7"
+
+  persistence:
+    existingClaim: ""
+    size: 120Gi
+    storageClass: nfs-client
+
+  nodeSelector: {}
+
+  resources:
+    requests:
+      memory: 1Gi
+
+  env:
+    INFLUXDB_ADMIN_PASSWORD: admin
+    INFLUXDB_ADMIN_USER: admin
+    INFLUXDB_DB: panelservice
+    INFLUXDB_WRITE_USER: panelservice
+    INFLUXDB_WRITE_USER_PASSWORD: panelservice
+    INFLUXDB_DATA_INDEX_VERSION: tsi1
+    GOMAXPROCS: "2"
+    INFLUXDB_DATA_MAX_CONCURRENT_COMPACTIONS: "1"
+    INFLUXDB_MONITOR_STORE_ENABLED: "false"

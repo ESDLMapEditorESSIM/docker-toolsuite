@@ -2,11 +2,11 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: mapeditor-tls-certificate
+  namespace: my-custom-mapeditor
 spec:
   secretName: mapeditor-tls-secret
   issuerRef:
     name: letsencrypt-prod
     kind: ClusterIssuer
-  commonName: {{ include "mapeditor.host" . }}
   dnsNames:
-    - {{ include "mapeditor.host" . }}
+    - mapeditor.example.com

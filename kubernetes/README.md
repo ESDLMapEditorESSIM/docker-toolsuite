@@ -2,6 +2,8 @@
 
 Reusable install scripts and Helm charts for docker-toolsuite.
 
+Requires `kubectl`, Helm 3, and `jq`.
+
 Use an install script with an environment file from a separate deployment repo:
 
 ```bash
@@ -16,11 +18,13 @@ See `reference-deployment/` for a minimal example repo layout.
 
 Each environment should provide:
 
-- `.env` with `NAMESPACE`, `VALUES_DIR`, `SECRETS_FILE`
+- `.env` with `NAMESPACE`, `VALUES_DIR`, `SECRETS_FILE`, and `IDM_BASE_URL` (copy from `envs/example/.env.example`)
 - `values.yaml` and optionally `values-grafana.yaml`
 - `secrets.sh` with the needed passwords, tokens, and `MAPEDITOR_CLIENT_SECRETS`
 
-Install scripts source `secrets.sh` locally. They do not read secrets back from the cluster.
+`IDM_BASE_URL` is the public Keycloak realm URL shared by the applications. Authentication endpoints are derived from it automatically.
+
+Keep public hostnames, certificates and ingress resources in the deployment repository.
 
 ## create-secrets.sh and dump-secrets.sh
 

@@ -1,0 +1,5 @@
+apiVersion: v2
+name: boundary-service
+description: Simple Helm chart for boundary-service
+version: 0.1.0
+appVersion: "1.0"
