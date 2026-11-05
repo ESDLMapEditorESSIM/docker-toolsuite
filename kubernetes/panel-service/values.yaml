@@ -1,0 +1,12 @@
+panelService:
+  image:
+    repository: esdlmapeditoressim/panel-service
+    tag: latest
+  imagePullSecret: ""
+  existingConfigSecret: ""
+
+  env:
+    ENV: prod
+    INTERNAL_GRAFANA_HOST: grafana
+    INTERNAL_GRAFANA_PORT: "3000"
+    EXTERNAL_GRAFANA_URL: "https://essim-dashboard.example.com"

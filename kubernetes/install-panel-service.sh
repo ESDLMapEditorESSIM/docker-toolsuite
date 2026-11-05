@@ -15,7 +15,7 @@ if [[ -n "${CI_REGISTRY_SERVER:-}" && -n "${CI_REGISTRY_USER_PANEL_SERVICE:-}" &
     --dry-run=client -o yaml | kubectl apply -f -
 fi
 
-gen_sed panel-service "$SCRIPT_DIR/panel-service/panel-service.yaml.tmpl" \
-  -e "s/{{ NAMESPACE }}/${NAMESPACE}/g" \
-  -e "s/{{ ESSIM_DASHBOARD_DNS }}/${ESSIM_DASHBOARD_DNS}/g" \
-  -e "s/{{ DOMAIN_EXTENSION }}/${DOMAIN_EXTENSION}/g"
+helm upgrade --install panel-service "$SCRIPT_DIR/panel-service" \
+  -n "$NAMESPACE" \
+  -f "$VALUES_DIR/values.yaml" \
+  --wait

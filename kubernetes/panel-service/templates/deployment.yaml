@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: panel-service
+  labels:
+    app: panel-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: panel-service
+  template:
+    metadata:
+      labels:
+        app: panel-service
+    spec:
+      initContainers:
+        - name: setup-grafana
+          image: {{ printf "%s:%s" .Values.panelService.image.repository .Values.panelService.image.tag | quote }}
+          imagePullPolicy: Always
+          {{- if .Values.panelService.existingConfigSecret }}
+          command: ["sh", "-ec", "if [ -s /existing-config/panel_service.env ]; then cp /existing-config/panel_service.env /config/panel_service.env; else exec python3 setup_grafana.py; fi"]
+          {{- else }}
+          command: ["python3", "setup_grafana.py"]
+          {{- end }}
+          env:
+            - name: INTERNAL_GRAFANA_HOST
+              value: {{ .Values.panelService.env.INTERNAL_GRAFANA_HOST | quote }}
+            - name: INTERNAL_GRAFANA_PORT
+              value: {{ .Values.panelService.env.INTERNAL_GRAFANA_PORT | quote }}
+            - name: GRAFANA_USER
+              value: "admin"
+            - name: GRAFANA_PASSWORD
+              value: "admin"
+            - name: ENV_FILE_PATH
+              value: "/config/panel_service.env"
+          volumeMounts:
+            - name: panel-config
+              mountPath: /config
+            {{- if .Values.panelService.existingConfigSecret }}
+            - name: panel-config-existing
+              mountPath: /existing-config
+              readOnly: true
+            {{- end }}
+      containers:
+        - name: panel-service
+          image: {{ printf "%s:%s" .Values.panelService.image.repository .Values.panelService.image.tag | quote }}
+          imagePullPolicy: Always
+          command: ["bash", "-c", "set -a; source /config/panel_service.env; set +a; exec gunicorn influxdbgraphs.api.main:app '-t 30' '-w 2' '-b :5000'"]
+          env:
+            {{- range $name, $value := .Values.panelService.env }}
+            - name: {{ $name }}
+              value: {{ $value | quote }}
+            {{- end }}
+          ports:
+            - containerPort: 5000
+          resources:
+            requests:
+              memory: "800Mi"
+              cpu: "400m"
+          volumeMounts:
+            - name: panel-config
+              mountPath: /config
+      {{- if .Values.panelService.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.panelService.imagePullSecret | quote }}
+      {{- end }}
+      volumes:
+        - name: panel-config
+          emptyDir: {}
+        {{- if .Values.panelService.existingConfigSecret }}
+        - name: panel-config-existing
+          secret:
+            secretName: {{ .Values.panelService.existingConfigSecret | quote }}
+            optional: true
+        {{- end }}
