@@ -1604,7 +1604,7 @@
     "strictTransportSecurity" : "max-age=31536000; includeSubDomains"
   },
   "smtpServer" : { },
-  "loginTheme" : "keycloak",
+  "loginTheme" : "esdl",
   "accountTheme" : "keycloak",
   "adminTheme" : "keycloak",
   "emailTheme" : "keycloak",

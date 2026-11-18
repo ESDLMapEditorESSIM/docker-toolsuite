@@ -344,6 +344,7 @@ services:
       - mapeditor-net
     volumes:
       - "./BaseInfrastructure/keycloak/:/opt/keycloak/data/import"
+      - "./BaseInfrastructure/keycloak/themes/esdl:/opt/keycloak/themes/esdl:ro"
 
   # The below is the config for the old Keycloak version, deprecated but available if you cannot upgrade yet.
   #  keycloak:
