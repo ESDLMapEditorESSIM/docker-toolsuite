@@ -785,7 +785,6 @@
       "saml.multivalued.roles" : "false",
       "saml.force.post.binding" : "false",
       "saml.encrypt" : "false",
-      "login_theme" : "keycloak",
       "saml.server.signature" : "false",
       "saml.server.signature.keyinfo.ext" : "false",
       "exclude.session.state.from.auth.response" : "false",
